@@ -112,55 +112,57 @@ export const ProfilePage = () => {
         </div>
       </div>
 
-      {/* Quick Links */}
-      <div className="rounded-lg bg-white p-6 shadow-sm">
-        <h3 className="mb-4 text-lg font-semibold text-slate-800">🔗 Navigasi Cepat</h3>
-        <div className="grid gap-3 sm:grid-cols-2">
-          <Link
-            to="/orders"
-            className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50"
-          >
-            <span>📦</span>
-            <div>
-              <p className="font-medium text-slate-700">Pesanan Saya</p>
-              <p className="text-xs text-slate-500">Lihat riwayat pesanan</p>
-            </div>
-          </Link>
+      {/* Quick Links - Only for CUSTOMER */}
+      {user.role === "CUSTOMER" && (
+        <div className="rounded-lg bg-white p-6 shadow-sm">
+          <h3 className="mb-4 text-lg font-semibold text-slate-800">🔗 Navigasi Cepat</h3>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Link
+              to="/orders"
+              className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50"
+            >
+              <span>📦</span>
+              <div>
+                <p className="font-medium text-slate-700">Pesanan Saya</p>
+                <p className="text-xs text-slate-500">Lihat riwayat pesanan</p>
+              </div>
+            </Link>
 
-          <Link
-            to="/catalog"
-            className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50"
-          >
-            <span>🛒</span>
-            <div>
-              <p className="font-medium text-slate-700">Katalog</p>
-              <p className="text-xs text-slate-500">Belanja produk kesehatan</p>
-            </div>
-          </Link>
+            <Link
+              to="/catalog"
+              className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50"
+            >
+              <span>🛒</span>
+              <div>
+                <p className="font-medium text-slate-700">Katalog</p>
+                <p className="text-xs text-slate-500">Belanja produk kesehatan</p>
+              </div>
+            </Link>
 
-          <Link
-            to="/cart"
-            className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50"
-          >
-            <span>🛍️</span>
-            <div>
-              <p className="font-medium text-slate-700">Keranjang</p>
-              <p className="text-xs text-slate-500">Lihat keranjang belanja</p>
-            </div>
-          </Link>
+            <Link
+              to="/cart"
+              className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-3 transition hover:border-blue-300 hover:bg-blue-50"
+            >
+              <span>🛍️</span>
+              <div>
+                <p className="font-medium text-slate-700">Keranjang</p>
+                <p className="text-xs text-slate-500">Lihat keranjang belanja</p>
+              </div>
+            </Link>
 
-          <button
-            className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-3 text-left transition hover:border-blue-300 hover:bg-blue-50"
-            disabled
-          >
-            <span>⚙️</span>
-            <div>
-              <p className="font-medium text-slate-700">Pengaturan</p>
-              <p className="text-xs text-slate-500">Segera hadir</p>
-            </div>
-          </button>
+            <button
+              className="flex items-center gap-3 rounded-md border border-slate-200 px-4 py-3 text-left transition hover:border-blue-300 hover:bg-blue-50"
+              disabled
+            >
+              <span>⚙️</span>
+              <div>
+                <p className="font-medium text-slate-700">Pengaturan</p>
+                <p className="text-xs text-slate-500">Segera hadir</p>
+              </div>
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };

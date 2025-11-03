@@ -63,31 +63,13 @@ export const UserMenu = () => {
             👤 Profil Saya
           </Link>
 
-          <Link
-            to="/orders"
-            onClick={() => setIsOpen(false)}
-            className="block px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100"
-          >
-            📦 Pesanan Saya
-          </Link>
-
-          {user.role === "ADMIN" && (
+          {user.role === "CUSTOMER" && (
             <Link
-              to="/admin"
+              to="/orders"
               onClick={() => setIsOpen(false)}
-              className="block border-t border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+              className="block px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100"
             >
-              ⚙️ Admin Panel
-            </Link>
-          )}
-
-          {user.role === "SELLER" && (
-            <Link
-              to="/seller"
-              onClick={() => setIsOpen(false)}
-              className="block border-t border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
-            >
-              🏪 Seller Panel
+              📦 Pesanan Saya
             </Link>
           )}
 

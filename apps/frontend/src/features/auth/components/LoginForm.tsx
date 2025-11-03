@@ -1,6 +1,7 @@
 import { type FormEvent, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../../../utils/error";
+import { useAuthStore } from "../../../stores/authStore";
 import { useLogin } from "../hooks";
 
 export const LoginForm = () => {
@@ -8,6 +9,7 @@ export const LoginForm = () => {
   const [password, setPassword] = useState("");
   const mutation = useLogin();
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -15,10 +17,14 @@ export const LoginForm = () => {
   };
 
   useEffect(() => {
-    if (mutation.isSuccess) {
-      navigate("/catalog");
+    if (mutation.isSuccess && user) {
+      // Redirect based on user role
+      const redirectPath =
+        user.role === "ADMIN" ? "/admin" : user.role === "SELLER" ? "/seller" : "/catalog"; // Default to catalog for CUSTOMER
+
+      navigate(redirectPath);
     }
-  }, [mutation.isSuccess, navigate]);
+  }, [mutation.isSuccess, user, navigate]);
 
   return (
     <form

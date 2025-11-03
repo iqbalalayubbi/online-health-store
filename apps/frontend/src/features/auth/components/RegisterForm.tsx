@@ -2,6 +2,7 @@ import type { FormEvent } from "react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { getErrorMessage } from "../../../utils/error";
+import { useAuthStore } from "../../../stores/authStore";
 import { useRegister } from "../hooks";
 
 export const RegisterForm = () => {
@@ -13,6 +14,7 @@ export const RegisterForm = () => {
 
   const mutation = useRegister();
   const navigate = useNavigate();
+  const user = useAuthStore((state) => state.user);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -26,10 +28,14 @@ export const RegisterForm = () => {
   };
 
   useEffect(() => {
-    if (mutation.isSuccess) {
-      navigate("/catalog");
+    if (mutation.isSuccess && user) {
+      // Redirect based on user role
+      const redirectPath =
+        user.role === "ADMIN" ? "/admin" : user.role === "SELLER" ? "/seller" : "/catalog"; // Default to catalog for CUSTOMER
+
+      navigate(redirectPath);
     }
-  }, [mutation.isSuccess, navigate]);
+  }, [mutation.isSuccess, user, navigate]);
 
   return (
     <form
