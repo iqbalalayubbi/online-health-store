@@ -1,0 +1,34 @@
+{
+  "name": "online-health-store",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Monorepo for an online health equipment store with Express, Prisma, React, and Zustand.",
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "dev": "npm run dev:backend",
+    "dev:backend": "npm --workspace @online-health-store/backend run dev",
+    "dev:frontend": "npm --workspace @online-health-store/frontend run dev",
+    "lint": "npm run lint --workspaces",
+    "format": "npm run format --workspaces",
+    "prisma:migrate": "npm --workspace @online-health-store/backend run prisma:migrate",
+    "prisma:generate": "npm --workspace @online-health-store/backend run prisma:generate",
+    "prisma:seed": "npm --workspace @online-health-store/backend exec prisma db seed"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=18.18.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "express",
+    "prisma",
+    "react",
+    "zustand",
+    "monorepo"
+  ],
+  "author": "",
+  "license": "MIT"
+}

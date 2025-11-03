@@ -1,0 +1,10 @@
+node_modules/
+.pnp.cjs
+.pnp.loader.mjs
+.env
+.env.local
+*.log
+apps/**/node_modules/
+apps/**/.env
+apps/**/dist
+prisma/migrations

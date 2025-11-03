@@ -1,0 +1,265 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  SELLER
+  CUSTOMER
+}
+
+enum OrderStatus {
+  PENDING
+  APPROVED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CREDIT_CARD
+  DEBIT_CARD
+  COD
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  passwordHash     String
+  role             UserRole
+  isActive         Boolean           @default(true)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  adminProfile     AdminProfile?
+  sellerProfile    SellerProfile?
+  customerProfile  CustomerProfile?
+  shops            Shop[]            @relation("UserShops")
+  feedbacks        Feedback[]
+  guestBookEntries GuestBookEntry[]
+  authTokens       AuthToken[]
+}
+
+model AdminProfile {
+  id        String   @id @default(uuid())
+  fullName  String
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  reviewedRequests ShopCreationRequest[] @relation("AdminReviewedRequests")
+  createdAt DateTime @default(now())
+}
+
+model SellerProfile {
+  id                    String                @id @default(uuid())
+  fullName              String
+  phoneNumber           String?
+  businessName          String?
+  userId                String                @unique
+  user                  User                  @relation(fields: [userId], references: [id])
+  shops                 Shop[]
+  shopCreationRequests  ShopCreationRequest[]
+  products              Product[]
+  createdAt             DateTime              @default(now())
+}
+
+model CustomerProfile {
+  id           String        @id @default(uuid())
+  fullName     String
+  phoneNumber  String?
+  defaultCity  String?
+  defaultState String?
+  defaultZip   String?
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id])
+  carts        Cart[]
+  orders       Order[]
+  createdAt    DateTime      @default(now())
+}
+
+model ShopCreationRequest {
+  id            String         @id @default(uuid())
+  status        String         @default("PENDING")
+  proposedName  String
+  proposedDescription String?
+  details       String?
+  sellerId      String
+  seller        SellerProfile  @relation(fields: [sellerId], references: [id])
+  createdAt     DateTime       @default(now())
+  reviewedAt    DateTime?
+  reviewerId    String?
+  reviewer      AdminProfile?  @relation("AdminReviewedRequests", fields: [reviewerId], references: [id])
+}
+
+model Shop {
+  id            String        @id @default(uuid())
+  name          String
+  description   String?
+  ownerId       String
+  owner         SellerProfile @relation(fields: [ownerId], references: [id])
+  managerId     String
+  manager       User          @relation("UserShops", fields: [managerId], references: [id])
+  categories    Category[]
+  products      Product[]
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Category {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  shopId      String
+  shop        Shop       @relation(fields: [shopId], references: [id])
+  products    Product[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+}
+
+model Product {
+  id             String          @id @default(uuid())
+  name           String
+  description    String?
+  price          Decimal         @db.Decimal(10, 2)
+  stock          Int             @default(0)
+  isActive       Boolean         @default(true)
+  categoryId     String
+  category       Category        @relation(fields: [categoryId], references: [id])
+  sellerId       String
+  seller         SellerProfile   @relation(fields: [sellerId], references: [id])
+  shopId         String
+  shop           Shop            @relation(fields: [shopId], references: [id])
+  cartItems      CartItem[]
+  orderItems     OrderItem[]
+  feedbacks      Feedback[]
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+}
+
+model Cart {
+  id          String        @id @default(uuid())
+  customerId  String
+  customer    CustomerProfile @relation(fields: [customerId], references: [id])
+  items       CartItem[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model CartItem {
+  id        String  @id @default(uuid())
+  cartId    String
+  cart      Cart    @relation(fields: [cartId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int     @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Order {
+  id            String          @id @default(uuid())
+  orderNumber   String          @unique
+  customerId    String
+  customer      CustomerProfile @relation(fields: [customerId], references: [id])
+  status        OrderStatus     @default(PENDING)
+  totalAmount   Decimal         @db.Decimal(10, 2)
+  shippingName  String
+  shippingPhone String?
+  shippingAddress String
+  shippingCity  String
+  shippingState String
+  shippingPostalCode String
+  shippingCountry String
+  payment       Payment?
+  shipment      Shipment?
+  items         OrderItem[]
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
+
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  price     Decimal  @db.Decimal(10, 2)
+}
+
+model Payment {
+  id            String        @id @default(uuid())
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  amount        Decimal       @db.Decimal(10, 2)
+  transactionId String?
+  orderId       String        @unique
+  order         Order         @relation(fields: [orderId], references: [id])
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Shipment {
+  id             String     @id @default(uuid())
+  courier        String?
+  trackingNumber String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  orderId        String     @unique
+  order          Order      @relation(fields: [orderId], references: [id])
+  address        String
+  city           String
+  state          String
+  postalCode     String
+  country        String
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Feedback {
+  id          String    @id @default(uuid())
+  rating      Int       @default(5)
+  comment     String?
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id])
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model GuestBookEntry {
+  id        String   @id @default(uuid())
+  name      String
+  email     String?
+  message   String
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+  createdAt DateTime @default(now())
+}
+
+model AuthToken {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
