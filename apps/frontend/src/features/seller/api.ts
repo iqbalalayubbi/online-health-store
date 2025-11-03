@@ -1,62 +1,90 @@
 import { apiClient } from "../../services/apiClient";
-import { type Order, type Product, type Shop } from "../../types/api";
 
-interface ShopRequestPayload {
-  proposedName: string;
-  proposedDescription?: string;
-  details?: string;
-}
+// SELLER APIs
 
-interface CreateProductPayload {
+export interface Shop {
+  id: string;
   name: string;
   description?: string;
-  price: number;
+  isActive: boolean;
+}
+
+export interface SellerProduct {
+  id: string;
+  name: string;
+  description?: string;
+  price: string;
   stock: number;
   categoryId: string;
-  shopId: string;
-  isActive?: boolean;
 }
 
-interface UpdateProductPayload {
-  name?: string;
+// Get seller shop (returns first shop or null if none exists)
+export const fetchSellerShop = async (): Promise<Shop | null> => {
+  try {
+    const { data } = await apiClient.get("/seller/shops");
+    // Return first shop if exists, otherwise null
+    return Array.isArray(data) && data.length > 0 ? data[0] : null;
+  } catch (error) {
+    // If no shop exists, return null instead of throwing error
+    return null;
+  }
+};
+
+// Create shop
+export const createShop = async (name: string, description?: string): Promise<Shop> => {
+  const { data } = await apiClient.post("/seller/shop-requests", {
+    businessName: name,
+    description,
+  });
+  return data;
+};
+
+// Update shop
+export const updateShop = async (name: string, description?: string): Promise<Shop> => {
+  const { data } = await apiClient.put("/seller/shops", { name, description });
+  return data;
+};
+
+// Get seller products
+export const fetchSellerProducts = async (): Promise<SellerProduct[]> => {
+  const { data } = await apiClient.get("/seller/products");
+  return data;
+};
+
+// Create product
+export const createProduct = async (product: {
+  name: string;
   description?: string;
-  price?: number;
-  stock?: number;
-  categoryId?: string;
-  shopId?: string;
-  isActive?: boolean;
-}
-
-export const submitShopRequest = async (payload: ShopRequestPayload) => {
-  const { data } = await apiClient.post("/seller/shop-requests", payload);
+  price: string;
+  stock: number;
+  categoryId: string;
+}): Promise<SellerProduct> => {
+  const { data } = await apiClient.post("/seller/products", product);
   return data;
 };
 
-export const fetchShops = async () => {
-  const { data } = await apiClient.get<Shop[]>("/seller/shops");
+// Update product
+export const updateProduct = async (
+  productId: string,
+  product: {
+    name?: string;
+    description?: string;
+    price?: string;
+    stock?: number;
+    categoryId?: string;
+  },
+): Promise<SellerProduct> => {
+  const { data } = await apiClient.put(`/seller/products/${productId}`, product);
   return data;
 };
 
-export const fetchSellerProducts = async () => {
-  const { data } = await apiClient.get<Product[]>("/seller/products");
-  return data;
-};
-
-export const createProduct = async (payload: CreateProductPayload) => {
-  const { data } = await apiClient.post<Product>("/seller/products", payload);
-  return data;
-};
-
-export const updateProduct = async (productId: string, payload: UpdateProductPayload) => {
-  const { data } = await apiClient.put<Product>(`/seller/products/${productId}`, payload);
-  return data;
-};
-
-export const deleteProduct = async (productId: string) => {
+// Delete product
+export const deleteProduct = async (productId: string): Promise<void> => {
   await apiClient.delete(`/seller/products/${productId}`);
 };
 
+// Get seller orders
 export const fetchSellerOrders = async () => {
-  const { data } = await apiClient.get<Order[]>("/seller/orders");
+  const { data } = await apiClient.get("/seller/orders");
   return data;
 };

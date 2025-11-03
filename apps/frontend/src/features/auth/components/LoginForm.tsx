@@ -16,7 +16,7 @@ export const LoginForm = () => {
 
   useEffect(() => {
     if (mutation.isSuccess) {
-      navigate("/dashboard");
+      navigate("/catalog");
     }
   }, [mutation.isSuccess, navigate]);
 

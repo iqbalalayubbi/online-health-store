@@ -1,8 +1,10 @@
 import { Link, Outlet } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
+import { CartIcon } from "../components/CartIcon";
+import { UserMenu } from "../components/UserMenu";
 
 export const MainLayout = () => {
-  const { user, clearAuth } = useAuthStore();
+  const { user } = useAuthStore();
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-100 text-slate-900">
@@ -15,18 +17,10 @@ export const MainLayout = () => {
           <Link className="transition-colors hover:text-blue-600" to="/catalog">
             Katalog
           </Link>
+          {user && <CartIcon />}
           {user ? (
             <>
-              <Link className="transition-colors hover:text-blue-600" to="/dashboard">
-                Dashboard
-              </Link>
-              <button
-                type="button"
-                onClick={clearAuth}
-                className="rounded-md bg-rose-500 px-3 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-600"
-              >
-                Logout
-              </button>
+              <UserMenu />
             </>
           ) : (
             <>

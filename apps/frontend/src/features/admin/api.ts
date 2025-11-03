@@ -1,87 +1,121 @@
 import { apiClient } from "../../services/apiClient";
-import { type Category, type Order } from "../../types/api";
 
-export interface AdminCustomer {
+// ADMIN APIs
+
+export interface Customer {
   id: string;
   email: string;
-  isActive: boolean;
-  customerProfile?: {
-    fullName: string;
-    phoneNumber?: string | null;
-  } | null;
+  fullName: string;
+  phoneNumber?: string;
 }
 
-export interface GuestBookEntry {
+export interface GuestbookEntry {
   id: string;
   name: string;
-  email?: string | null;
+  email: string;
   message: string;
   createdAt: string;
 }
 
-export interface ShopRequest {
+export interface Category {
   id: string;
-  status: string;
-  proposedName: string;
-  proposedDescription?: string | null;
-  details?: string | null;
+  name: string;
+  description?: string;
 }
 
-export const fetchCustomers = async () => {
-  const { data } = await apiClient.get<AdminCustomer[]>("/admin/customers");
+export interface ShopRequest {
+  id: string;
+  sellerEmail: string;
+  businessName: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
+}
+
+// Get all customers
+export const fetchCustomers = async (): Promise<Customer[]> => {
+  const { data } = await apiClient.get("/admin/customers");
   return data;
 };
 
-export const setCustomerStatus = async (customerId: string, isActive: boolean) => {
-  const { data } = await apiClient.patch(`/admin/customers/${customerId}/status`, { isActive });
+// Delete customer
+export const deleteCustomer = async (customerId: string): Promise<void> => {
+  await apiClient.delete(`/admin/customers/${customerId}`);
+};
+
+// Get all guestbook entries
+export const fetchGuestbookEntries = async (): Promise<GuestbookEntry[]> => {
+  const { data } = await apiClient.get("/admin/guestbook");
   return data;
 };
 
-export const fetchGuestbook = async () => {
-  const { data } = await apiClient.get<GuestBookEntry[]>("/admin/guestbook");
-  return data;
-};
-
-export const deleteGuestBookEntry = async (entryId: string) => {
+// Delete guestbook entry
+export const deleteGuestbookEntry = async (entryId: string): Promise<void> => {
   await apiClient.delete(`/admin/guestbook/${entryId}`);
 };
 
-export const createCategory = async (payload: Partial<Category> & { shopId: string }) => {
-  const { data } = await apiClient.post<Category>("/admin/categories", payload);
+// Get all categories
+export const fetchCategories = async (): Promise<Category[]> => {
+  const { data } = await apiClient.get("/admin/categories");
   return data;
 };
 
+// Create category
+export const createCategory = async (name: string, description?: string): Promise<Category> => {
+  const { data } = await apiClient.post("/admin/categories", { name, description });
+  return data;
+};
+
+// Update category
 export const updateCategory = async (
   categoryId: string,
-  payload: Partial<Category> & { shopId?: string },
-) => {
-  const { data } = await apiClient.put<Category>(`/admin/categories/${categoryId}`, payload);
+  name: string,
+  description?: string,
+): Promise<Category> => {
+  const { data } = await apiClient.put(`/admin/categories/${categoryId}`, {
+    name,
+    description,
+  });
   return data;
 };
 
-export const deleteCategory = async (categoryId: string) => {
+// Delete category
+export const deleteCategory = async (categoryId: string): Promise<void> => {
   await apiClient.delete(`/admin/categories/${categoryId}`);
 };
 
-export const fetchShopRequests = async () => {
-  const { data } = await apiClient.get<ShopRequest[]>("/admin/shop-requests");
+// Get shop creation requests
+export const fetchShopRequests = async (): Promise<ShopRequest[]> => {
+  const { data } = await apiClient.get("/admin/shop-requests");
   return data;
 };
 
-export const reviewShopRequest = async (requestId: string, decision: "APPROVED" | "REJECTED") => {
-  const { data } = await apiClient.post(`/admin/shop-requests/${requestId}/review`, { decision });
+// Approve shop request
+export const approveShopRequest = async (requestId: string): Promise<ShopRequest> => {
+  const { data } = await apiClient.post(`/admin/shop-requests/${requestId}/approve`);
   return data;
 };
 
-export const fetchOrders = async () => {
-  const { data } = await apiClient.get<Order[]>("/admin/orders");
+// Reject shop request
+export const rejectShopRequest = async (requestId: string): Promise<ShopRequest> => {
+  const { data } = await apiClient.post(`/admin/shop-requests/${requestId}/reject`);
   return data;
 };
 
-export const markOrderShipped = async (
+// Get orders for shipping management
+export const fetchOrdersForShipping = async () => {
+  const { data } = await apiClient.get("/admin/orders/shipping");
+  return data;
+};
+
+// Mark order as shipped
+export const markOrderAsShipped = async (
   orderId: string,
-  payload: { courier?: string; trackingNumber?: string },
+  courier: string,
+  trackingNumber: string,
 ) => {
-  const { data } = await apiClient.patch(`/admin/orders/${orderId}/ship`, payload);
+  const { data } = await apiClient.post(`/admin/orders/${orderId}/ship`, {
+    courier,
+    trackingNumber,
+  });
   return data;
 };
