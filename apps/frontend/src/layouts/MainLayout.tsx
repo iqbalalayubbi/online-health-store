@@ -1,5 +1,5 @@
-import { Link, Outlet } from 'react-router-dom';
-import { useAuthStore } from '../stores/authStore';
+import { Link, Outlet } from "react-router-dom";
+import { useAuthStore } from "../stores/authStore";
 
 export const MainLayout = () => {
   const { user, clearAuth } = useAuthStore();
@@ -49,4 +49,3 @@ export const MainLayout = () => {
     </div>
   );
 };
-

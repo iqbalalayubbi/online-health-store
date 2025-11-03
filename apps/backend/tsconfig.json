@@ -4,8 +4,9 @@
     "rootDir": "src",
     "outDir": "dist",
 
-    "module": "commonjs",
-    "target": "es2021",
+    "module": "ESNext",
+    "target": "ES2022",
+    "moduleResolution": "bundler",
     "types": ["node"],
 
     // Other Outputs
@@ -24,7 +25,8 @@
     "skipLibCheck": true,
 
     "esModuleInterop": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "prisma", "prisma.config.ts"]

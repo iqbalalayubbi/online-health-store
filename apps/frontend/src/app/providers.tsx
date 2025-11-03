@@ -1,5 +1,6 @@
 import { type ReactNode, useEffect } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ToastContainer } from "../components/Toast";
 import { useAuthStore } from "../stores/authStore";
 import { apiClient } from "../services/apiClient";
 
@@ -20,5 +21,10 @@ export const AppProviders = ({ children }: AppProvidersProps) => {
     }
   }, [token]);
 
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+      <ToastContainer />
+    </QueryClientProvider>
+  );
 };
