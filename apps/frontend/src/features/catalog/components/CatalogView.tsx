@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "../../../stores/authStore";
 import { toast } from "../../../components/Toast";
+import { LoginRequiredModal } from "../../../components/LoginRequiredModal";
 import { fetchCategories, fetchProducts } from "../api";
 import { addToCart } from "../../customer/api";
 import { ProductCard } from "./ProductCard";
@@ -10,6 +12,8 @@ import type { Product } from "../../../types/api";
 export const CatalogView = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { user } = useAuthStore();
   const queryClient = useQueryClient();
 
   const categoriesQuery = useQuery({
@@ -37,6 +41,11 @@ export const CatalogView = () => {
   });
 
   const handleAddToCart = (productId: string) => {
+    // Check if user is logged in
+    if (!user) {
+      setShowLoginModal(true);
+      return;
+    }
     addToCartMutation.mutate(productId);
   };
 
@@ -109,6 +118,9 @@ export const CatalogView = () => {
         onClose={() => setSelectedProduct(null)}
         onAddToCart={handleAddToCart}
       />
+
+      {/* Login Required Modal */}
+      <LoginRequiredModal isOpen={showLoginModal} onClose={() => setShowLoginModal(false)} />
     </section>
   );
 };
