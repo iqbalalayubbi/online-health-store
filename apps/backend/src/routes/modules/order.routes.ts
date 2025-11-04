@@ -7,6 +7,6 @@ const router = Router();
 router.use(authenticate(["CUSTOMER", "SELLER", "ADMIN"]));
 
 router.get("/", orderController.listOrders);
+router.get("/:orderId/export-pdf", orderController.exportOrderPDF);
 
 export { router as orderRouter };
-

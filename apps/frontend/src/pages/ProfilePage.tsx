@@ -52,7 +52,7 @@ export const ProfilePage = () => {
       <div className="rounded-lg bg-white p-8 shadow-sm">
         <div className="flex flex-col items-center gap-6 md:flex-row">
           {/* Avatar */}
-          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-blue-400 to-blue-600">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-linear-to-br from-blue-400 to-blue-600">
             <svg className="h-12 w-12 text-white" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
             </svg>

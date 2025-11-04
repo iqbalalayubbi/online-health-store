@@ -30,5 +30,11 @@
     "monorepo"
   ],
   "author": "",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "@types/pdfkit": "^0.17.3",
+    "html2canvas": "^1.4.1",
+    "jspdf": "^3.0.3",
+    "pdfkit": "^0.17.2"
+  }
 }

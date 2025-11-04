@@ -1,5 +1,6 @@
 import { Response, NextFunction } from "express";
 import * as orderService from "../services/order.service";
+import * as pdfService from "../services/pdf.service";
 import { prisma } from "../lib/prisma";
 import { AuthenticatedRequest } from "../middleware/auth";
 
@@ -38,3 +39,56 @@ export const listOrders = async (req: AuthenticatedRequest, res: Response, next:
   }
 };
 
+export const exportOrderPDF = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    const { orderId } = req.params;
+
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    // Get order with all relations
+    const order = await prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        items: {
+          include: {
+            product: true,
+          },
+        },
+        payment: true,
+        shipment: true,
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    // Check authorization - customer can only get their own orders
+    if (req.user.role === "CUSTOMER") {
+      const customer = await prisma.customerProfile.findUnique({
+        where: { userId: req.user.id },
+      });
+      if (!customer || order.customerId !== customer.id) {
+        return res.status(403).json({ error: "Forbidden" });
+      }
+    }
+
+    // Generate PDF
+    const pdfStream = await pdfService.generateOrderPDF(order);
+
+    // Set response headers
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="Invoice-${order.orderNumber}.pdf"`);
+
+    // Pipe PDF stream to response
+    pdfStream.pipe(res);
+  } catch (error) {
+    next(error);
+  }
+};

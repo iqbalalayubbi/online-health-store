@@ -278,7 +278,7 @@ export const CheckoutPage = () => {
                   className="flex gap-4 border-b border-slate-200 pb-4 last:border-b-0"
                 >
                   {/* Product Image Placeholder */}
-                  <div className="h-16 w-16 flex-shrink-0 rounded-md bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
+                  <div className="h-16 w-16 shrink-0 rounded-md bg-linear-to-br from-slate-200 to-slate-300 flex items-center justify-center">
                     <svg
                       className="h-8 w-8 text-slate-400"
                       fill="none"

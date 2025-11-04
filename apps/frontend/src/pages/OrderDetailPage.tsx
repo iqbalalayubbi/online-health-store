@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { useParams, Link } from "react-router-dom";
+import { useState } from "react";
 import { apiClient } from "../services/apiClient";
+import { toast } from "../components/Toast";
+import { downloadOrderPDF } from "../utils/pdf";
 import type { Order } from "../types/api";
 
 const fetchOrderDetail = async (orderId: string): Promise<Order> => {
@@ -10,6 +13,7 @@ const fetchOrderDetail = async (orderId: string): Promise<Order> => {
 
 export const OrderDetailPage = () => {
   const { orderId } = useParams<{ orderId: string }>();
+  const [isDownloadingPDF, setIsDownloadingPDF] = useState(false);
 
   const orderQuery = useQuery({
     queryKey: ["order", orderId],
@@ -122,7 +126,7 @@ export const OrderDetailPage = () => {
                   className="flex gap-4 border-b border-slate-200 pb-4 last:border-b-0"
                 >
                   {/* Product Image Placeholder */}
-                  <div className="h-20 w-20 shrink-0 rounded-md bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
+                  <div className="h-20 w-20 shrink-0 rounded-md bg-linear-to-br from-slate-200 to-slate-300 flex items-center justify-center">
                     <svg
                       className="h-10 w-10 text-slate-400"
                       fill="none"
@@ -344,6 +348,46 @@ export const OrderDetailPage = () => {
           >
             Kembali ke Pesanan
           </Link>
+
+          {/* Download PDF Button */}
+          <button
+            onClick={async () => {
+              setIsDownloadingPDF(true);
+              try {
+                await downloadOrderPDF(order);
+                toast.success("Laporan PDF siap diunduh");
+              } catch (error) {
+                toast.error("Gagal membuat laporan PDF");
+              } finally {
+                setIsDownloadingPDF(false);
+              }
+            }}
+            disabled={isDownloadingPDF}
+            className="mt-3 block w-full rounded-md border border-blue-300 bg-white px-4 py-2 text-center font-semibold text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {isDownloadingPDF ? (
+              <span className="inline-flex items-center gap-2">
+                <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                  ></path>
+                </svg>
+                Membuat PDF...
+              </span>
+            ) : (
+              "📄 Download PDF"
+            )}
+          </button>
         </div>
       </div>
     </div>

@@ -14,8 +14,8 @@ router.post("/cart", customerController.addToCart);
 router.delete("/cart/:cartItemId", customerController.removeFromCart);
 
 router.get("/orders", customerController.listOrders);
+router.get("/orders/:orderId/export-pdf", customerController.exportOrderPDF);
 router.post("/orders", customerController.checkout);
 router.delete("/orders/:orderId", customerController.cancelOrder);
 
 export { router as customerRouter };
-
