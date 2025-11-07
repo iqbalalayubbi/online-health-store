@@ -139,7 +139,8 @@ export const checkout = async (userId: string, payload: unknown) => {
       data: {
         orderNumber: generateOrderNumber(),
         customerId: customer.id,
-        status: data.paymentMethod === "COD" ? OrderStatus.PENDING : OrderStatus.APPROVED,
+        // Immediately mark as delivered so customer can give feedback right away
+        status: OrderStatus.DELIVERED,
         totalAmount: new Prisma.Decimal(total),
         shippingName: data.shippingName,
         shippingPhone: data.shippingPhone,
@@ -158,7 +159,8 @@ export const checkout = async (userId: string, payload: unknown) => {
         payment: {
           create: {
             method: data.paymentMethod,
-            status: data.paymentMethod === "COD" ? "PENDING" : "COMPLETED",
+            // Consider payment completed immediately for this flow
+            status: "COMPLETED",
             amount: new Prisma.Decimal(total),
           },
         },
@@ -205,6 +207,3 @@ export const cancelOrder = async (userId: string, orderId: string) => {
     },
   });
 };
-
-
-

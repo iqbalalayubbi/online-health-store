@@ -26,10 +26,11 @@ export const SellerShopSetupPage = () => {
   }, [shopQuery.data]);
 
   const createMutation = useMutation({
+    // createShop now sends proposedName/proposedDescription under the hood
     mutationFn: () => createShop(formData.name, formData.description),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["seller-shop"] });
-      toast.success("Shop created successfully");
+      toast.success("Permintaan pembuatan shop berhasil dikirim (PENDING)");
       setIsEditing(false);
     },
     onError: () => {
@@ -136,7 +137,7 @@ export const SellerShopSetupPage = () => {
                 disabled={createMutation.isPending || updateMutation.isPending}
                 className="flex-1 rounded-md bg-blue-600 px-4 py-2 font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {shop ? "Update Shop" : "Create Shop"}
+                {shop ? "Update Shop" : "Submit Creation Request"}
               </button>
               {shop && (
                 <button

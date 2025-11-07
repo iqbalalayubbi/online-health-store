@@ -37,6 +37,16 @@ export const ProductCard = ({
       {/* Product Info */}
       <div className="flex flex-col space-y-2 p-4">
         <h4 className="font-semibold text-slate-800">{product.name}</h4>
+        {typeof product.averageRating !== "undefined" && (
+          <div className="flex items-center gap-2 text-xs text-slate-600">
+            <div className="flex items-center gap-0.5">
+              {/* Simple star visualization using unicode; replace with icons if available */}
+              <span className="text-yellow-500">★</span>
+              <span className="font-medium text-slate-800">{product.averageRating ?? 0}</span>
+            </div>
+            <span>({product.feedbackCount ?? 0})</span>
+          </div>
+        )}
         <p className="text-lg font-semibold text-blue-600">
           Rp {Number(product.price).toLocaleString("id-ID", { minimumFractionDigits: 0 })}
         </p>

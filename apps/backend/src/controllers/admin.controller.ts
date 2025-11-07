@@ -69,10 +69,28 @@ export const deleteCategory = async (req: Request, res: Response, next: NextFunc
   }
 };
 
+export const listCategories = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const categories = await adminService.listCategories();
+    res.json(categories);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const listShopRequests = async (_req: Request, res: Response, next: NextFunction) => {
   try {
     const requests = await adminService.listShopRequests();
     res.json(requests);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listShops = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const shops = await adminService.listShops();
+    res.json(shops);
   } catch (error) {
     next(error);
   }
@@ -117,3 +135,11 @@ export const markOrderAsShipped = async (req: Request, res: Response, next: Next
   }
 };
 
+export const listOrdersForShipping = async (_req: Request, res: Response, next: NextFunction) => {
+  try {
+    const orders = await adminService.listOrdersForShipping();
+    res.json(orders);
+  } catch (error) {
+    next(error);
+  }
+};

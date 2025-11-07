@@ -32,7 +32,7 @@ export const AdminShopRequestsPage = () => {
     },
   });
 
-  const requests = requestsQuery.data ?? [];
+  const requests = (requestsQuery.data ?? []) as any[];
   const pendingRequests = requests.filter((r) => r.status === "PENDING");
 
   return (

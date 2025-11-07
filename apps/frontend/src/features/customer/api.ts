@@ -63,3 +63,23 @@ export const fetchOrders = async () => {
   const { data } = await apiClient.get<Order[]>("/customer/orders");
   return data;
 };
+
+export interface CreateFeedbackPayload {
+  productId: string;
+  rating: number; // 1..5
+  comment?: string;
+}
+
+export const createFeedback = async (payload: CreateFeedbackPayload) => {
+  const { data } = await apiClient.post("/feedback", payload);
+  return data;
+};
+
+export const fetchMyReviewedProductIds = async (productIds: string[]) => {
+  if (productIds.length === 0) return { reviewed: [] as string[] };
+  const params = new URLSearchParams({ productIds: productIds.join(",") });
+  const { data } = await apiClient.get<{ reviewed: string[] }>(
+    `/feedback/mine?${params.toString()}`,
+  );
+  return data;
+};

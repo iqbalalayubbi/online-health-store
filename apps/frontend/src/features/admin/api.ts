@@ -21,6 +21,13 @@ export interface Category {
   id: string;
   name: string;
   description?: string;
+  shop?: { id: string; name: string };
+}
+
+export interface AdminShopSummary {
+  id: string;
+  name: string;
+  isActive: boolean;
 }
 
 export interface ShopRequest {
@@ -59,9 +66,18 @@ export const fetchCategories = async (): Promise<Category[]> => {
   return data;
 };
 
+export const fetchAdminShops = async (): Promise<AdminShopSummary[]> => {
+  const { data } = await apiClient.get("/admin/shops");
+  return data;
+};
+
 // Create category
-export const createCategory = async (name: string, description?: string): Promise<Category> => {
-  const { data } = await apiClient.post("/admin/categories", { name, description });
+export const createCategory = async (
+  name: string,
+  shopId: string,
+  description?: string,
+): Promise<Category> => {
+  const { data } = await apiClient.post("/admin/categories", { name, description, shopId });
   return data;
 };
 
@@ -70,10 +86,12 @@ export const updateCategory = async (
   categoryId: string,
   name: string,
   description?: string,
+  shopId?: string,
 ): Promise<Category> => {
   const { data } = await apiClient.put(`/admin/categories/${categoryId}`, {
     name,
     description,
+    shopId,
   });
   return data;
 };
@@ -86,19 +104,43 @@ export const deleteCategory = async (categoryId: string): Promise<void> => {
 // Get shop creation requests
 export const fetchShopRequests = async (): Promise<ShopRequest[]> => {
   const { data } = await apiClient.get("/admin/shop-requests");
-  return data;
+  // Map backend shape (ShopCreationRequest with nested seller.user) to UI-friendly interface
+  return (Array.isArray(data) ? data : []).map((r: any) => ({
+    id: r.id,
+    businessName: r.proposedName ?? r.businessName ?? "",
+    sellerEmail: r?.seller?.user?.email ?? r?.sellerEmail ?? "",
+    status: r.status,
+    createdAt: r.createdAt,
+  })) as ShopRequest[];
 };
 
 // Approve shop request
 export const approveShopRequest = async (requestId: string): Promise<ShopRequest> => {
-  const { data } = await apiClient.post(`/admin/shop-requests/${requestId}/approve`);
-  return data;
+  // Backend expects a single /review endpoint with decision in body
+  const { data } = await apiClient.post(`/admin/shop-requests/${requestId}/review`, {
+    decision: "APPROVED",
+  });
+  return {
+    id: data.id,
+    businessName: data.proposedName ?? data.businessName ?? "",
+    sellerEmail: data?.seller?.user?.email ?? "",
+    status: data.status,
+    createdAt: data.createdAt,
+  } as ShopRequest;
 };
 
 // Reject shop request
 export const rejectShopRequest = async (requestId: string): Promise<ShopRequest> => {
-  const { data } = await apiClient.post(`/admin/shop-requests/${requestId}/reject`);
-  return data;
+  const { data } = await apiClient.post(`/admin/shop-requests/${requestId}/review`, {
+    decision: "REJECTED",
+  });
+  return {
+    id: data.id,
+    businessName: data.proposedName ?? data.businessName ?? "",
+    sellerEmail: data?.seller?.user?.email ?? "",
+    status: data.status,
+    createdAt: data.createdAt,
+  } as ShopRequest;
 };
 
 // Get orders for shipping management

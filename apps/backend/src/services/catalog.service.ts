@@ -14,8 +14,8 @@ export const listCategories = (shopId?: string) => {
   });
 };
 
-export const listProducts = (filters: { categoryId?: string; shopId?: string }) => {
-  return prisma.product.findMany({
+export const listProducts = async (filters: { categoryId?: string; shopId?: string }) => {
+  const products = await prisma.product.findMany({
     where: {
       isActive: true,
       categoryId: filters.categoryId,
@@ -24,10 +24,23 @@ export const listProducts = (filters: { categoryId?: string; shopId?: string }) 
     include: {
       category: true,
       shop: true,
+      feedbacks: {
+        select: { rating: true },
+      },
     },
     orderBy: {
       createdAt: "desc",
     },
+  });
+
+  // Compute aggregated rating per product
+  return products.map((p) => {
+    const count = p.feedbacks.length;
+    const sum = p.feedbacks.reduce((acc, f) => acc + f.rating, 0);
+    const averageRating = count === 0 ? null : Number((sum / count).toFixed(2));
+    const anyProduct: any = { ...p, averageRating, feedbackCount: count };
+    delete anyProduct.feedbacks;
+    return anyProduct;
   });
 };
 
@@ -47,4 +60,3 @@ export const getProduct = (productId: string) => {
     },
   });
 };
-

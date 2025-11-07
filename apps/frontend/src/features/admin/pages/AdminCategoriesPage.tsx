@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchCategories, createCategory, updateCategory, deleteCategory } from "../api";
+import {
+  fetchCategories,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+  fetchAdminShops,
+} from "../api";
 import { toast } from "../../../components/Toast";
 import type { FormEvent } from "react";
 
@@ -10,19 +16,26 @@ export const AdminCategoriesPage = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [shopId, setShopId] = useState("");
 
   const categoriesQuery = useQuery({
     queryKey: ["admin-categories"],
     queryFn: fetchCategories,
   });
 
+  const shopsQuery = useQuery({
+    queryKey: ["admin-shops"],
+    queryFn: fetchAdminShops,
+  });
+
   const createMutation = useMutation({
-    mutationFn: () => createCategory(name, description),
+    mutationFn: () => createCategory(name, shopId, description),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       toast.success("Kategori berhasil dibuat");
       setName("");
       setDescription("");
+      setShopId("");
       setShowForm(false);
     },
     onError: () => {
@@ -31,12 +44,16 @@ export const AdminCategoriesPage = () => {
   });
 
   const updateMutation = useMutation({
-    mutationFn: () => (editingId ? updateCategory(editingId, name, description) : Promise.reject()),
+    mutationFn: () =>
+      editingId
+        ? updateCategory(editingId, name, description, shopId || undefined)
+        : Promise.reject(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin-categories"] });
       toast.success("Kategori berhasil diupdate");
       setName("");
       setDescription("");
+      setShopId("");
       setEditingId(null);
       setShowForm(false);
     },
@@ -64,6 +81,10 @@ export const AdminCategoriesPage = () => {
       toast.error("Nama kategori tidak boleh kosong");
       return;
     }
+    if (!editingId && !shopId) {
+      toast.error("Pilih shop untuk kategori baru");
+      return;
+    }
     if (editingId) {
       updateMutation.mutate();
     } else {
@@ -76,6 +97,7 @@ export const AdminCategoriesPage = () => {
     if (category) {
       setName(category.name);
       setDescription(category.description || "");
+      setShopId(category.shop?.id ?? "");
       setEditingId(categoryId);
       setShowForm(true);
     }
@@ -86,6 +108,7 @@ export const AdminCategoriesPage = () => {
     setEditingId(null);
     setName("");
     setDescription("");
+    setShopId("");
   };
 
   return (
@@ -133,6 +156,26 @@ export const AdminCategoriesPage = () => {
             />
           </label>
 
+          <label className="grid gap-2 text-sm font-medium text-slate-700">
+            Shop *
+            <select
+              value={shopId}
+              onChange={(e) => setShopId(e.target.value)}
+              disabled={shopsQuery.isLoading}
+              className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-900 shadow-sm transition focus:border-blue-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-200 disabled:opacity-60"
+            >
+              <option value="">{shopsQuery.isLoading ? "Memuat shop..." : "Pilih shop"}</option>
+              {(shopsQuery.data ?? []).map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name} {s.isActive ? "" : "(inactive)"}
+                </option>
+              ))}
+            </select>
+            {shopsQuery.isError && (
+              <span className="text-xs text-red-600">Gagal memuat daftar shop</span>
+            )}
+          </label>
+
           <div className="flex gap-3">
             <button
               type="submit"
@@ -170,6 +213,9 @@ export const AdminCategoriesPage = () => {
               <h3 className="mb-2 font-semibold text-slate-800">{category.name}</h3>
               {category.description && (
                 <p className="mb-4 text-sm text-slate-600">{category.description}</p>
+              )}
+              {category.shop && (
+                <p className="mb-2 text-xs text-slate-500">Shop: {category.shop.name}</p>
               )}
               <div className="flex gap-2">
                 <button

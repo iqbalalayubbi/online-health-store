@@ -59,6 +59,18 @@ export const deleteCategory = (categoryId: string) => {
   });
 };
 
+// List all categories (admin view) including their shop for context
+export const listCategories = () => {
+  return prisma.category.findMany({
+    include: {
+      shop: {
+        select: { id: true, name: true },
+      },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+};
+
 export const listShopRequests = () => {
   return prisma.shopCreationRequest.findMany({
     orderBy: { createdAt: "desc" },
@@ -70,6 +82,17 @@ export const listShopRequests = () => {
       },
       reviewer: true,
     },
+  });
+};
+
+export const listShops = () => {
+  return prisma.shop.findMany({
+    select: {
+      id: true,
+      name: true,
+      isActive: true,
+    },
+    orderBy: { createdAt: "desc" },
   });
 };
 
@@ -145,3 +168,34 @@ export const markOrderAsShipped = async (
   });
 };
 
+// Orders for shipping management (PENDING & SHIPPED)
+export const listOrdersForShipping = async () => {
+  const orders = await prisma.order.findMany({
+    where: {
+      status: {
+        in: [OrderStatus.PENDING, OrderStatus.SHIPPED, OrderStatus.DELIVERED],
+      },
+    },
+    include: {
+      customer: { include: { user: true } },
+      shipment: true,
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return orders.map((o) => {
+    const shippedAt = o.shipment?.shippedAt ?? undefined;
+    // naive estimated delivery: shippedAt + 3 days
+    const estimatedDelivery = shippedAt
+      ? new Date(shippedAt.getTime() + 3 * 24 * 60 * 60 * 1000)
+      : undefined;
+    return {
+      id: o.id,
+      customerEmail: o.customer?.user?.email ?? "",
+      totalPrice: Number(o.totalAmount),
+      status: o.status,
+      trackingNumber: o.shipment?.trackingNumber ?? undefined,
+      estimatedDelivery: estimatedDelivery?.toISOString(),
+    };
+  });
+};

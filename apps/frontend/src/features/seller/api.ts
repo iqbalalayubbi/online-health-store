@@ -31,10 +31,11 @@ export const fetchSellerShop = async (): Promise<Shop | null> => {
 };
 
 // Create shop
-export const createShop = async (name: string, description?: string): Promise<Shop> => {
+export const createShop = async (name: string, description?: string) => {
+  // Backend expects proposedName and proposedDescription for shop creation requests
   const { data } = await apiClient.post("/seller/shop-requests", {
-    businessName: name,
-    description,
+    proposedName: name,
+    proposedDescription: description,
   });
   return data;
 };

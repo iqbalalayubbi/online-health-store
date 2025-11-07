@@ -14,7 +14,7 @@ interface ShippingOrder {
 
 export const AdminShippingPage = () => {
   const queryClient = useQueryClient();
-  const [filter, setFilter] = useState<"PENDING" | "SHIPPED" | "ALL">("PENDING");
+  const [filter, setFilter] = useState<"PENDING" | "SHIPPED" | "DELIVERED" | "ALL">("PENDING");
 
   const ordersQuery = useQuery({
     queryKey: ["admin-shipping"],
@@ -61,7 +61,7 @@ export const AdminShippingPage = () => {
       </div>
 
       <div className="flex gap-3">
-        {(["PENDING", "SHIPPED", "ALL"] as const).map((status) => (
+        {(["PENDING", "SHIPPED", "DELIVERED", "ALL"] as const).map((status) => (
           <button
             key={status}
             onClick={() => setFilter(status)}
@@ -71,7 +71,13 @@ export const AdminShippingPage = () => {
                 : "bg-slate-200 text-slate-700 hover:bg-slate-300"
             }`}
           >
-            {status === "PENDING" ? "Pending" : status === "SHIPPED" ? "Shipped" : "Semua"}
+            {status === "PENDING"
+              ? "Pending"
+              : status === "SHIPPED"
+                ? "Shipped"
+                : status === "DELIVERED"
+                  ? "Delivered"
+                  : "Semua"}
           </button>
         ))}
       </div>

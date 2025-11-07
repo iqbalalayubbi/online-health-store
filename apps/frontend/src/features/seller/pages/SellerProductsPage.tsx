@@ -8,6 +8,7 @@ import {
   type SellerProduct,
 } from "../api";
 import { toast } from "../../../components/Toast";
+import { fetchCategories } from "../../catalog/api";
 
 export const SellerProductsPage = () => {
   const queryClient = useQueryClient();
@@ -19,6 +20,11 @@ export const SellerProductsPage = () => {
     price: "",
     stock: "",
     categoryId: "",
+  });
+
+  const categoriesQuery = useQuery({
+    queryKey: ["catalog-categories"],
+    queryFn: fetchCategories,
   });
 
   const productsQuery = useQuery({
@@ -97,7 +103,7 @@ export const SellerProductsPage = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.price || !formData.stock) {
+    if (!formData.name || !formData.price || !formData.stock || !formData.categoryId) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -178,13 +184,26 @@ export const SellerProductsPage = () => {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700">Category ID</label>
-              <input
-                type="text"
+              <label className="block text-sm font-medium text-slate-700">Category *</label>
+              <select
                 value={formData.categoryId}
                 onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
-              />
+                className="mt-1 block w-full rounded-md border border-slate-300 px-3 py-2 focus:border-blue-500 focus:outline-none disabled:opacity-50"
+                required
+                disabled={categoriesQuery.isLoading}
+              >
+                <option value="" disabled>
+                  {categoriesQuery.isLoading ? "Memuat kategori..." : "Pilih kategori"}
+                </option>
+                {(categoriesQuery.data ?? []).map((c: any) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+              {categoriesQuery.isError && (
+                <p className="mt-1 text-xs text-red-600">Gagal memuat kategori</p>
+              )}
             </div>
 
             <div className="flex gap-3">

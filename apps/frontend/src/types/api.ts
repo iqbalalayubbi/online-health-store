@@ -40,6 +40,9 @@ export interface Product {
   stock: number;
   categoryId: string;
   shopId: string;
+  // Aggregated fields (optional, may be null if no feedback)
+  averageRating?: number | null;
+  feedbackCount?: number;
 }
 
 export interface Shop {
