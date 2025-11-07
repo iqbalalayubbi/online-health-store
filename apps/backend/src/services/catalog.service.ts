@@ -1,8 +1,9 @@
 import { prisma } from "../lib/prisma";
+import { Prisma } from "@prisma/client";
 
 export const listCategories = (shopId?: string) => {
   return prisma.category.findMany({
-    where: shopId ? { shopId } : undefined,
+    ...(shopId ? { where: { shopId } } : {}),
     include: {
       shop: {
         select: { name: true },
@@ -15,12 +16,12 @@ export const listCategories = (shopId?: string) => {
 };
 
 export const listProducts = async (filters: { categoryId?: string; shopId?: string }) => {
+  const where: Prisma.ProductWhereInput = { isActive: true };
+  if (filters.categoryId !== undefined) where.categoryId = filters.categoryId;
+  if (filters.shopId !== undefined) where.shopId = filters.shopId;
+
   const products = await prisma.product.findMany({
-    where: {
-      isActive: true,
-      categoryId: filters.categoryId,
-      shopId: filters.shopId,
-    },
+    where,
     include: {
       category: true,
       shop: true,
@@ -36,11 +37,24 @@ export const listProducts = async (filters: { categoryId?: string; shopId?: stri
   // Compute aggregated rating per product
   return products.map((p) => {
     const count = p.feedbacks.length;
-    const sum = p.feedbacks.reduce((acc, f) => acc + f.rating, 0);
+    const sum = p.feedbacks.reduce((acc: number, f: { rating: number }) => acc + f.rating, 0);
     const averageRating = count === 0 ? null : Number((sum / count).toFixed(2));
-    const anyProduct: any = { ...p, averageRating, feedbackCount: count };
-    delete anyProduct.feedbacks;
-    return anyProduct;
+    return {
+      id: p.id,
+      name: p.name,
+      description: p.description,
+      price: p.price,
+      stock: p.stock,
+      isActive: p.isActive,
+      categoryId: p.categoryId,
+      shopId: p.shopId,
+      createdAt: p.createdAt,
+      updatedAt: p.updatedAt,
+      category: p.category,
+      shop: p.shop,
+      averageRating,
+      feedbackCount: count,
+    };
   });
 };
 

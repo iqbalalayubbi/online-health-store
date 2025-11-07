@@ -25,9 +25,15 @@ const updateProfileSchema = z.object({
 
 export const updateProfile = (userId: string, payload: unknown) => {
   const data = updateProfileSchema.parse(payload);
+  const updateData: Prisma.CustomerProfileUpdateInput = {};
+  if (data.fullName !== undefined) updateData.fullName = data.fullName;
+  if (data.phoneNumber !== undefined) updateData.phoneNumber = data.phoneNumber ?? null;
+  if (data.defaultCity !== undefined) updateData.defaultCity = data.defaultCity ?? null;
+  if (data.defaultState !== undefined) updateData.defaultState = data.defaultState ?? null;
+  if (data.defaultZip !== undefined) updateData.defaultZip = data.defaultZip ?? null;
   return prisma.customerProfile.update({
     where: { userId },
-    data,
+    data: updateData,
   });
 };
 
@@ -143,7 +149,7 @@ export const checkout = async (userId: string, payload: unknown) => {
         status: OrderStatus.DELIVERED,
         totalAmount: new Prisma.Decimal(total),
         shippingName: data.shippingName,
-        shippingPhone: data.shippingPhone,
+        shippingPhone: data.shippingPhone ?? null,
         shippingAddress: data.shippingAddress,
         shippingCity: data.shippingCity,
         shippingState: data.shippingState,

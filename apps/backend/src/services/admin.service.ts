@@ -1,4 +1,4 @@
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus, Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { z } from "zod";
 import { createHttpError } from "../utils/http-error";
@@ -42,14 +42,23 @@ const categorySchema = z.object({
 
 export const createCategory = async (payload: unknown) => {
   const data = categorySchema.parse(payload);
-  return prisma.category.create({ data });
+  return prisma.category.create({
+    data: {
+      name: data.name,
+      shopId: data.shopId,
+      description: data.description ?? null,
+    },
+  });
 };
 
 export const updateCategory = async (categoryId: string, payload: unknown) => {
-  const data = categorySchema.partial().parse(payload);
+  const data = categorySchema.partial().omit({ shopId: true }).parse(payload);
+  const updateData: Prisma.CategoryUpdateInput = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.description !== undefined) updateData.description = data.description ?? null;
   return prisma.category.update({
     where: { id: categoryId },
-    data,
+    data: updateData,
   });
 };
 
@@ -145,8 +154,8 @@ export const markOrderAsShipped = async (
       shipment: {
         upsert: {
           create: {
-            courier: payload.courier,
-            trackingNumber: payload.trackingNumber,
+            courier: payload.courier ?? null,
+            trackingNumber: payload.trackingNumber ?? null,
             shippedAt: new Date(),
             address: order.shippingAddress,
             city: order.shippingCity,
@@ -155,8 +164,8 @@ export const markOrderAsShipped = async (
             country: order.shippingCountry,
           },
           update: {
-            courier: payload.courier,
-            trackingNumber: payload.trackingNumber,
+            courier: payload.courier ?? null,
+            trackingNumber: payload.trackingNumber ?? null,
             shippedAt: new Date(),
           },
         },

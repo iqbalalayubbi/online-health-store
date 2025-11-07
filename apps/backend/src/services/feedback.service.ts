@@ -58,7 +58,7 @@ export const createFeedback = async (userId: string, payload: unknown) => {
       productId: data.productId,
       userId,
       rating: data.rating,
-      comment: data.comment,
+      comment: data.comment ?? null,
     },
   });
 };

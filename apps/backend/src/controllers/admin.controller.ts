@@ -15,7 +15,7 @@ export const listCustomers = async (_req: Request, res: Response, next: NextFunc
 export const setCustomerStatus = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const updated = await adminService.setCustomerActiveState(
-      req.params.customerId,
+      req.params.customerId!,
       req.body.isActive === true,
     );
     res.json(updated);
@@ -35,7 +35,7 @@ export const getGuestbookEntries = async (_req: Request, res: Response, next: Ne
 
 export const deleteGuestbookEntry = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await adminService.deleteGuestbookEntry(req.params.entryId);
+    await adminService.deleteGuestbookEntry(req.params.entryId!);
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -53,7 +53,7 @@ export const createCategory = async (req: Request, res: Response, next: NextFunc
 
 export const updateCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const category = await adminService.updateCategory(req.params.categoryId, req.body);
+    const category = await adminService.updateCategory(req.params.categoryId!, req.body);
     res.json(category);
   } catch (error) {
     next(error);
@@ -62,7 +62,7 @@ export const updateCategory = async (req: Request, res: Response, next: NextFunc
 
 export const deleteCategory = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    await adminService.deleteCategory(req.params.categoryId);
+    await adminService.deleteCategory(req.params.categoryId!);
     res.status(204).send();
   } catch (error) {
     next(error);
@@ -116,7 +116,7 @@ export const reviewShopRequest = async (
 
     const decision = req.body.decision === "APPROVED" ? "APPROVED" : "REJECTED";
     const request = await adminService.reviewShopRequest(
-      req.params.requestId,
+      req.params.requestId!,
       decision,
       adminProfile.id,
     );
@@ -128,7 +128,7 @@ export const reviewShopRequest = async (
 
 export const markOrderAsShipped = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const shipment = await adminService.markOrderAsShipped(req.params.orderId, req.body);
+    const shipment = await adminService.markOrderAsShipped(req.params.orderId!, req.body);
     res.json(shipment);
   } catch (error) {
     next(error);

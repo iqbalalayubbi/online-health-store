@@ -20,7 +20,11 @@ export const createFeedback = async (
 
 export const listFeedback = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const feedback = await feedbackService.listFeedbackForProduct(req.params.productId);
+    const productId = req.params.productId;
+    if (!productId) {
+      return res.status(400).json({ error: "Bad Request", message: "productId is required" });
+    }
+    const feedback = await feedbackService.listFeedbackForProduct(productId);
     res.json(feedback);
   } catch (error) {
     next(error);
