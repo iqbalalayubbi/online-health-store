@@ -173,8 +173,8 @@ export const checkout = async (userId: string, payload: unknown) => {
       data: {
         orderNumber: generateOrderNumber(),
         customerId: customer.id,
-        // Immediately mark as delivered so customer can give feedback right away
-        status: OrderStatus.DELIVERED,
+        // Start as PENDING to allow cancellation before shipping/approval
+        status: OrderStatus.PENDING,
         totalAmount: new Prisma.Decimal(total),
         shippingName: data.shippingName,
         shippingPhone: data.shippingPhone ?? null,
@@ -230,8 +230,9 @@ export const cancelOrder = async (userId: string, orderId: string) => {
     throw createHttpError(404, "Order not found");
   }
 
-  if (order.status === OrderStatus.SHIPPED || order.status === OrderStatus.DELIVERED) {
-    throw createHttpError(400, "Order cannot be cancelled after shipping");
+  // Only allow cancellation while still PENDING
+  if (order.status !== OrderStatus.PENDING) {
+    throw createHttpError(400, "Pesanan hanya bisa dibatalkan saat status masih PENDING");
   }
 
   return prisma.order.update({

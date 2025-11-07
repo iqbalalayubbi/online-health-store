@@ -177,6 +177,43 @@ export const markOrderAsShipped = async (
   });
 };
 
+export const markOrderAsDelivered = async (orderId: string) => {
+  const order = await prisma.order.findUnique({ where: { id: orderId } });
+  if (!order) {
+    throw createHttpError(404, "Order not found");
+  }
+  if (order.status === OrderStatus.CANCELLED) {
+    throw createHttpError(400, "Cannot deliver a cancelled order");
+  }
+  if (order.status === OrderStatus.DELIVERED) {
+    return order; // already delivered
+  }
+  return prisma.order.update({
+    where: { id: orderId },
+    data: {
+      status: OrderStatus.DELIVERED,
+      shipment: {
+        upsert: {
+          create: {
+            courier: null,
+            trackingNumber: null,
+            shippedAt: null,
+            deliveredAt: new Date(),
+            address: order.shippingAddress,
+            city: order.shippingCity,
+            state: order.shippingState,
+            postalCode: order.shippingPostalCode,
+            country: order.shippingCountry,
+          },
+          update: {
+            deliveredAt: new Date(),
+          },
+        },
+      },
+    },
+  });
+};
+
 // Orders for shipping management (PENDING & SHIPPED)
 export const listOrdersForShipping = async () => {
   const orders = await prisma.order.findMany({

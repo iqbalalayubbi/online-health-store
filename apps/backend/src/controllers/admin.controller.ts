@@ -143,3 +143,12 @@ export const listOrdersForShipping = async (_req: Request, res: Response, next: 
     next(error);
   }
 };
+
+export const markOrderAsDelivered = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const order = await adminService.markOrderAsDelivered(req.params.orderId!);
+    res.json(order);
+  } catch (error) {
+    next(error);
+  }
+};

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchOrdersForShipping, markOrderAsShipped } from "../api";
+import { fetchOrdersForShipping, markOrderAsShipped, markOrderAsDelivered } from "../api";
 import { toast } from "../../../components/Toast";
 
 interface ShippingOrder {
@@ -29,6 +29,17 @@ export const AdminShippingPage = () => {
     },
     onError: () => {
       toast.error("Gagal update status pengiriman");
+    },
+  });
+
+  const deliverMutation = useMutation({
+    mutationFn: (orderId: string) => markOrderAsDelivered(orderId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin-shipping"] });
+      toast.success("Order marked as delivered");
+    },
+    onError: () => {
+      toast.error("Gagal mengubah status menjadi delivered");
     },
   });
 
@@ -152,6 +163,15 @@ export const AdminShippingPage = () => {
                         className="rounded-md bg-blue-600 px-3 py-1 text-sm font-semibold text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         Ship
+                      </button>
+                    )}
+                    {order.status === "SHIPPED" && (
+                      <button
+                        onClick={() => deliverMutation.mutate(order.id)}
+                        disabled={deliverMutation.isPending}
+                        className="ml-2 rounded-md bg-green-600 px-3 py-1 text-sm font-semibold text-white transition hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {deliverMutation.isPending ? "Delivering..." : "Mark Delivered"}
                       </button>
                     )}
                   </td>

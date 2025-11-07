@@ -26,6 +26,8 @@ router.get("/orders", orderController.listOrders);
 router.patch("/orders/:orderId/ship", adminController.markOrderAsShipped);
 // Allow POST for compatibility with frontend client
 router.post("/orders/:orderId/ship", adminController.markOrderAsShipped);
+router.patch("/orders/:orderId/deliver", adminController.markOrderAsDelivered);
+router.post("/orders/:orderId/deliver", adminController.markOrderAsDelivered);
 router.get("/orders/shipping", adminController.listOrdersForShipping);
 
 export { router as adminRouter };

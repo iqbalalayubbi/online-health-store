@@ -161,3 +161,9 @@ export const markOrderAsShipped = async (
   });
   return data;
 };
+
+// Mark order as delivered
+export const markOrderAsDelivered = async (orderId: string) => {
+  const { data } = await apiClient.post(`/admin/orders/${orderId}/deliver`, {});
+  return data;
+};
