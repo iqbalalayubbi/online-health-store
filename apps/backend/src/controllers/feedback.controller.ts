@@ -40,13 +40,20 @@ export const listMyReviewedProductIds = async (
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-    const raw = typeof req.query.productIds === "string" ? req.query.productIds : "";
-    const productIds = raw
+    // New behavior: accept orderIds to get reviewed productIds per order
+    const rawOrderIds = typeof req.query.orderIds === "string" ? req.query.orderIds : "";
+    const orderIds = rawOrderIds
       .split(",")
       .map((s) => s.trim())
       .filter((s) => s.length > 0);
-    const reviewed = await feedbackService.listReviewedProductIdsForUser(req.user.id, productIds);
-    res.json({ reviewed });
+    if (orderIds.length === 0) {
+      return res.json({ reviewedByOrder: {} });
+    }
+    const reviewedByOrder = await feedbackService.listReviewedProductIdsForUserByOrders(
+      req.user.id,
+      orderIds,
+    );
+    res.json({ reviewedByOrder });
   } catch (error) {
     next(error);
   }

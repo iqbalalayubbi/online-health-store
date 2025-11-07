@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
-import { fetchCart, removeFromCart } from "../features/customer/api";
+import { fetchCart, removeFromCart, updateCartItemQuantity } from "../features/customer/api";
 import { toast } from "../components/Toast";
 
 export const CartPage = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const cartQuery = useQuery({
     queryKey: ["cart"],
     queryFn: fetchCart,
@@ -20,6 +21,32 @@ export const CartPage = () => {
       toast.success("Produk dihapus dari keranjang");
     } catch (error) {
       toast.error("Gagal menghapus produk dari keranjang");
+    }
+  };
+
+  const updatingIds = new Set<string>();
+
+  const changeQuantity = async (cartItemId: string, nextQty: number) => {
+    if (nextQty < 1) return; // guard
+    try {
+      updatingIds.add(cartItemId);
+      // Optimistic UI: mutate local cache before refetch
+      queryClient.setQueryData(["cart"], (prev: any) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          items: prev.items.map((it: any) =>
+            it.id === cartItemId ? { ...it, quantity: nextQty } : it,
+          ),
+        };
+      });
+      await updateCartItemQuantity(cartItemId, nextQty);
+      await cartQuery.refetch();
+    } catch (error) {
+      toast.error("Gagal memperbarui jumlah produk");
+      await cartQuery.refetch();
+    } finally {
+      updatingIds.delete(cartItemId);
     }
   };
 
@@ -82,10 +109,30 @@ export const CartPage = () => {
                     </p>
                   </div>
 
-                  {/* Quantity */}
-                  <div className="text-center">
+                  {/* Quantity controls */}
+                  <div className="flex flex-col items-center">
                     <p className="text-sm font-medium text-slate-600">Qty</p>
-                    <p className="text-lg font-semibold text-slate-800">{item.quantity}</p>
+                    <div className="mt-1 flex items-center rounded-md border border-slate-300 bg-white">
+                      <button
+                        disabled={updatingIds.has(item.id) || item.quantity <= 1}
+                        onClick={() => changeQuantity(item.id, item.quantity - 1)}
+                        className="px-2 py-1 text-slate-600 disabled:opacity-40 hover:bg-slate-100"
+                        aria-label="Kurangi"
+                      >
+                        -
+                      </button>
+                      <div className="min-w-10 text-center text-sm font-semibold text-slate-800">
+                        {item.quantity}
+                      </div>
+                      <button
+                        disabled={updatingIds.has(item.id)}
+                        onClick={() => changeQuantity(item.id, item.quantity + 1)}
+                        className="px-2 py-1 text-slate-600 disabled:opacity-40 hover:bg-slate-100"
+                        aria-label="Tambah"
+                      >
+                        +
+                      </button>
+                    </div>
                   </div>
 
                   {/* Subtotal */}

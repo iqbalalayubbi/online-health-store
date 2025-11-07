@@ -78,8 +78,29 @@ export const removeFromCart = async (
       return res.status(401).json({ error: "Unauthorized" });
     }
     const profile = await getCustomerProfileOrThrow(req.user.id);
-    await customerService.removeFromCart(profile.id, req.params.cartItemId);
+    await customerService.removeFromCart(profile.id, req.params.cartItemId!);
     res.status(204).send();
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateCartItemQuantity = async (
+  req: AuthenticatedRequest,
+  res: Response,
+  next: NextFunction,
+) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ error: "Unauthorized" });
+    }
+    const profile = await getCustomerProfileOrThrow(req.user.id);
+    const item = await customerService.updateCartItemQuantity(
+      profile.id,
+      req.params.cartItemId!,
+      req.body,
+    );
+    res.json(item);
   } catch (error) {
     next(error);
   }
@@ -102,7 +123,7 @@ export const cancelOrder = async (req: AuthenticatedRequest, res: Response, next
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
-    const order = await customerService.cancelOrder(req.user.id, req.params.orderId);
+    const order = await customerService.cancelOrder(req.user.id, req.params.orderId!);
     res.json(order);
   } catch (error) {
     next(error);

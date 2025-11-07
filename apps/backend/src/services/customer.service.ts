@@ -64,6 +64,10 @@ const cartItemSchema = z.object({
   quantity: z.number().int().positive(),
 });
 
+const updateCartItemSchema = z.object({
+  quantity: z.number().int().min(1),
+});
+
 export const addToCart = async (customerId: string, payload: unknown) => {
   const data = cartItemSchema.parse(payload);
   const cart = await ensureCart(customerId);
@@ -102,6 +106,30 @@ export const removeFromCart = async (customerId: string, cartItemId: string) => 
     throw createHttpError(404, "Cart item not found");
   }
   await prisma.cartItem.delete({ where: { id: cartItemId } });
+};
+
+export const updateCartItemQuantity = async (
+  customerId: string,
+  cartItemId: string,
+  payload: unknown,
+) => {
+  const data = updateCartItemSchema.parse(payload);
+  const cart = await ensureCart(customerId);
+  const item = await prisma.cartItem.findFirst({
+    where: { id: cartItemId, cartId: cart.id },
+    include: { product: true },
+  });
+  if (!item) {
+    throw createHttpError(404, "Cart item not found");
+  }
+  // Optional stock check if product exists
+  if (item.product && data.quantity > item.product.stock) {
+    throw createHttpError(400, "Quantity exceeds available stock");
+  }
+  return prisma.cartItem.update({
+    where: { id: item.id },
+    data: { quantity: data.quantity },
+  });
 };
 
 const checkoutSchema = z.object({

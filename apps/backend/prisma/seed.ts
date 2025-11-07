@@ -1,6 +1,7 @@
 import "dotenv/config";
 import { prisma } from "../src/lib/prisma";
 import { ensureAdminSeed } from "../src/services/auth.service";
+import { hashPassword } from "../src/utils/password";
 import { OrderStatus, PaymentMethod, PaymentStatus, Prisma } from "@prisma/client";
 
 async function clearDatabase() {
@@ -33,10 +34,13 @@ async function seed() {
   });
 
   // 2) Sellers + Shops
+  const sellerPlainPassword = "Seller123!";
+  const sellerHashed = await hashPassword(sellerPlainPassword);
+
   const seller1User = await prisma.user.create({
     data: {
       email: "seller1@onlinehealth.local",
-      passwordHash: "$2b$10$9j5I1rRrjRk1Xb8gQp0m0eWm5wGQxYt6G0Oe0dD8uB8xqNwqkU4jW", // bcrypt for "Seller123!" (example only)
+      passwordHash: sellerHashed,
       role: "SELLER",
       sellerProfile: { create: { fullName: "Seller One", phoneNumber: "081234567890" } },
     },
@@ -46,7 +50,7 @@ async function seed() {
   const seller2User = await prisma.user.create({
     data: {
       email: "seller2@onlinehealth.local",
-      passwordHash: "$2b$10$9j5I1rRrjRk1Xb8gQp0m0eWm5wGQxYt6G0Oe0dD8uB8xqNwqkU4jW", // same hash
+      passwordHash: sellerHashed, // same password for convenience
       role: "SELLER",
       sellerProfile: { create: { fullName: "Seller Two", phoneNumber: "089876543210" } },
     },
@@ -141,10 +145,13 @@ async function seed() {
   ]);
 
   // 5) Customers
+  const customerPlainPassword = "Customer123!";
+  const customerHashed = await hashPassword(customerPlainPassword);
+
   const customer1 = await prisma.user.create({
     data: {
       email: "customer1@onlinehealth.local",
-      passwordHash: "$2b$10$d7tM1rq3V6Oq3zS6v0Y/LeqvKb2oFv8UcxY3RkXQf3YzU2o3nGfZ.", // bcrypt for "Customer123!" (example only)
+      passwordHash: customerHashed,
       role: "CUSTOMER",
       customerProfile: {
         create: { fullName: "Customer One", phoneNumber: "0811111111", defaultCity: "Jakarta" },
@@ -156,7 +163,7 @@ async function seed() {
   const customer2 = await prisma.user.create({
     data: {
       email: "customer2@onlinehealth.local",
-      passwordHash: "$2b$10$d7tM1rq3V6Oq3zS6v0Y/LeqvKb2oFv8UcxY3RkXQf3YzU2o3nGfZ.",
+      passwordHash: customerHashed,
       role: "CUSTOMER",
       customerProfile: {
         create: { fullName: "Customer Two", phoneNumber: "0822222222", defaultCity: "Bandung" },
@@ -236,7 +243,7 @@ async function seed() {
   });
 
   // Order C: DELIVERED + feedback
-  await prisma.order.create({
+  const orderC = await prisma.order.create({
     data: {
       orderNumber: "ORD-0003",
       customerId: customer2.customerProfile!.id,
@@ -278,13 +285,22 @@ async function seed() {
     },
   });
 
-  // Feedback for delivered order items by customer2
-  await prisma.feedback.createMany({
-    data: [
-      { userId: customer2.id, productId: p4.id, rating: 5, comment: "Mantap, pijatannya enak" },
-      { userId: customer2.id, productId: p2.id, rating: 4, comment: "Termometer bagus" },
-    ],
-  });
+  // Feedback for delivered order items by customer2 (now linked per order) using raw insert (orderId column not in TS client yet)
+  await prisma.$executeRawUnsafe(
+    `INSERT INTO Feedback (id, userId, productId, orderId, rating, comment, createdAt, updatedAt)
+     VALUES (UUID(), ?, ?, ?, ?, ?, NOW(), NOW()),
+            (UUID(), ?, ?, ?, ?, ?, NOW(), NOW())`,
+    customer2.id,
+    p4.id,
+    orderC.id,
+    5,
+    "Mantap, pijatannya enak",
+    customer2.id,
+    p2.id,
+    orderC.id,
+    4,
+    "Termometer bagus",
+  );
 
   // Guestbook entries
   await prisma.guestBookEntry.createMany({

@@ -1,7 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { fetchOrders, cancelOrder, fetchMyReviewedProductIds } from "../features/customer/api";
+import {
+  fetchOrders,
+  cancelOrder,
+  fetchMyReviewedProductIdsByOrder,
+} from "../features/customer/api";
 import { toast } from "../components/Toast";
 import { downloadOrderPDF } from "../utils/pdf";
 import type { Order } from "../types/api";
@@ -11,6 +15,7 @@ export const OrdersPage = () => {
   const queryClient = useQueryClient();
   const [downloadingPDFId, setDownloadingPDFId] = useState<string | null>(null);
   const [feedbackProductId, setFeedbackProductId] = useState<string | null>(null);
+  const [feedbackOrderId, setFeedbackOrderId] = useState<string | null>(null);
   const [feedbackProductName, setFeedbackProductName] = useState<string | undefined>(undefined);
 
   const ordersQuery = useQuery({
@@ -32,37 +37,31 @@ export const OrdersPage = () => {
   const orders = (ordersQuery.data ?? []) as Order[];
   const isLoading = ordersQuery.isLoading;
 
-  // Track product IDs that are already reviewed by this user
-  const [reviewedProductIds, setReviewedProductIds] = useState<string[]>([]);
+  // Track reviewed product IDs per orderId
+  const [reviewedByOrder, setReviewedByOrder] = useState<Record<string, string[]>>({});
 
-  // Load reviewed product IDs for delivered products (refetch when feedback modal closes or orders change)
+  // Load reviewed product IDs grouped by order for delivered orders
   useEffect(() => {
     if (!ordersQuery.isSuccess) return;
-    const deliveredProductIds = Array.from(
-      new Set(
-        orders
-          .filter((o) => o.status === "DELIVERED")
-          .flatMap((o) => o.items.map((it) => it.product.id)),
-      ),
-    );
-    if (deliveredProductIds.length === 0) {
-      setReviewedProductIds([]);
+    const deliveredOrderIds = orders.filter((o) => o.status === "DELIVERED").map((o) => o.id);
+    if (deliveredOrderIds.length === 0) {
+      setReviewedByOrder({});
       return;
     }
     let cancelled = false;
-    fetchMyReviewedProductIds(deliveredProductIds)
-      .then((data) => {
+    fetchMyReviewedProductIdsByOrder(deliveredOrderIds)
+      .then((data: { reviewedByOrder: Record<string, string[]> }) => {
         if (cancelled) return;
-        const reviewed = Array.isArray((data as any)?.reviewed) ? data.reviewed : [];
-        setReviewedProductIds(reviewed);
+        const map = (data && (data as any).reviewedByOrder) || {};
+        setReviewedByOrder(map);
       })
       .catch(() => {
-        if (!cancelled) setReviewedProductIds([]); // fallback
+        if (!cancelled) setReviewedByOrder({}); // fallback
       });
     return () => {
       cancelled = true;
     };
-  }, [ordersQuery.isSuccess, orders, feedbackProductId]);
+  }, [ordersQuery.isSuccess, orders, feedbackProductId, feedbackOrderId]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -189,11 +188,12 @@ export const OrdersPage = () => {
                           })}
                         </p>
                         {order.status === "DELIVERED" &&
-                          !(reviewedProductIds?.includes(item.product.id) ?? false) && (
+                          !(reviewedByOrder[order.id] || []).includes(item.product.id) && (
                             <button
                               type="button"
                               onClick={() => {
                                 setFeedbackProductId(item.product.id);
+                                setFeedbackOrderId(order.id);
                                 setFeedbackProductName(item.product.name);
                               }}
                               className="rounded-md border border-blue-300 px-3 py-1.5 text-xs font-medium text-blue-600 transition hover:bg-blue-50"
@@ -202,7 +202,7 @@ export const OrdersPage = () => {
                             </button>
                           )}
                         {order.status === "DELIVERED" &&
-                          (reviewedProductIds?.includes(item.product.id) ?? false) && (
+                          (reviewedByOrder[order.id] || []).includes(item.product.id) && (
                             <span className="rounded-md border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs text-slate-500">
                               Sudah direview
                             </span>
@@ -369,14 +369,20 @@ export const OrdersPage = () => {
       <FeedbackModal
         isOpen={Boolean(feedbackProductId)}
         productId={feedbackProductId}
+        orderId={feedbackOrderId}
         productName={feedbackProductName}
-        onSubmitted={(pid) => {
-          if (pid) {
-            setReviewedProductIds((prev) => (prev.includes(pid) ? prev : [...prev, pid]));
+        onSubmitted={(pid, oid) => {
+          if (pid && oid) {
+            setReviewedByOrder((prev) => {
+              const curr = prev[oid] || [];
+              if (curr.includes(pid)) return prev;
+              return { ...prev, [oid]: [...curr, pid] };
+            });
           }
         }}
         onClose={() => {
           setFeedbackProductId(null);
+          setFeedbackOrderId(null);
           setFeedbackProductName(undefined);
         }}
       />

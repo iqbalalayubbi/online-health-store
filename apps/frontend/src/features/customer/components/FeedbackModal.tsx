@@ -7,14 +7,16 @@ interface FeedbackModalProps {
   isOpen: boolean;
   onClose: () => void;
   productId: string | null;
+  orderId: string | null; // order context for per-order feedback
   productName?: string;
-  onSubmitted?: (productId: string) => void;
+  onSubmitted?: (productId: string, orderId: string) => void;
 }
 
 export const FeedbackModal = ({
   isOpen,
   onClose,
   productId,
+  orderId,
   productName,
   onSubmitted,
 }: FeedbackModalProps) => {
@@ -27,8 +29,8 @@ export const FeedbackModal = ({
     onSuccess: () => {
       toast.success("Feedback berhasil dikirim");
       queryClient.invalidateQueries({ queryKey: ["product-feedback", productId] });
-      if (productId) {
-        onSubmitted?.(productId);
+      if (productId && orderId) {
+        onSubmitted?.(productId, orderId);
       }
       onClose();
     },
@@ -39,11 +41,11 @@ export const FeedbackModal = ({
     },
   });
 
-  if (!isOpen || !productId) return null;
+  if (!isOpen || !productId || !orderId) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    mutation.mutate({ productId, rating, comment: comment.trim() || undefined });
+    mutation.mutate({ productId, orderId, rating, comment: comment.trim() || undefined });
   };
 
   return (

@@ -190,6 +190,7 @@ model Order {
   payment       Payment?
   shipment      Shipment?
   items         OrderItem[]
+  feedbacks     Feedback[]
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
 }
@@ -241,8 +242,12 @@ model Feedback {
   user        User      @relation(fields: [userId], references: [id])
   productId   String
   product     Product   @relation(fields: [productId], references: [id])
+  // Link feedback to a specific order to allow one feedback per order per product
+  orderId     String?
+  order       Order?    @relation(fields: [orderId], references: [id])
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+  @@unique([userId, productId, orderId])
 }
 
 model GuestBookEntry {

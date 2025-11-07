@@ -12,6 +12,7 @@ router.put("/profile", customerController.updateProfile);
 router.get("/cart", customerController.getCart);
 router.post("/cart", customerController.addToCart);
 router.delete("/cart/:cartItemId", customerController.removeFromCart);
+router.patch("/cart/:cartItemId", customerController.updateCartItemQuantity);
 
 router.get("/orders", customerController.listOrders);
 router.get("/orders/:orderId/export-pdf", customerController.exportOrderPDF);

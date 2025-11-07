@@ -12,7 +12,10 @@
     "format": "npm run format --workspaces",
     "prisma:migrate": "npm --workspace @online-health-store/backend run prisma:migrate",
     "prisma:generate": "npm --workspace @online-health-store/backend run prisma:generate",
-    "prisma:seed": "npm --workspace @online-health-store/backend exec prisma db seed"
+    "prisma:seed": "npm --workspace @online-health-store/backend run db:seed",
+    "db:reset": "npm --workspace @online-health-store/backend run db:reset",
+    "db:reset-seed": "npm --workspace @online-health-store/backend run db:reset && npm --workspace @online-health-store/backend run db:seed",
+    "db:reseed": "npm --workspace @online-health-store/backend run db:reseed"
   },
   "workspaces": [
     "apps/*",
