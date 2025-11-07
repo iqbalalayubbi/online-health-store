@@ -24,6 +24,9 @@ export const MainLayout = () => {
                   <Link className="transition-colors hover:text-blue-600" to="/catalog">
                     Katalog
                   </Link>
+                  <Link className="transition-colors hover:text-blue-600" to="/guestbook">
+                    Buku Tamu
+                  </Link>
                   {user && <CartIcon />}
                 </>
               )}

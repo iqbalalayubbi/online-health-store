@@ -10,6 +10,7 @@ import { ProfilePage } from "../pages/ProfilePage";
 import { OrdersPage } from "../pages/OrdersPage";
 import { OrderDetailPage } from "../pages/OrderDetailPage";
 import { ProtectedRoute } from "../components/ProtectedRoute";
+import { GuestbookPage } from "../features/guestbook/pages/GuestbookPage";
 
 // Admin pages
 import {
@@ -40,6 +41,7 @@ export const AppRoutes = () => (
       <Route path="orders/:orderId" element={<OrderDetailPage />} />
       <Route path="login" element={<LoginPage />} />
       <Route path="register" element={<RegisterPage />} />
+      <Route path="guestbook" element={<GuestbookPage />} />
 
       {/* Admin Routes */}
       <Route
