@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../stores/authStore";
 
 export const UserMenu = () => {
-  const { user, clearAuth } = useAuthStore();
+  const { user, logoutAndRedirect } = useAuthStore();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -22,8 +23,8 @@ export const UserMenu = () => {
   if (!user) return null;
 
   const handleLogout = () => {
-    clearAuth();
     setIsOpen(false);
+    logoutAndRedirect(navigate);
   };
 
   return (

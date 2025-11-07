@@ -1,4 +1,4 @@
-import { Navigate } from "react-router";
+import { Navigate, useLocation } from "react-router";
 import { useAuthStore } from "../stores/authStore";
 
 interface ProtectedRouteProps {
@@ -8,10 +8,11 @@ interface ProtectedRouteProps {
 
 export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
   const { user } = useAuthStore();
+  const location = useLocation();
 
   // Not authenticated
   if (!user) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   // No role requirement specified, just check if authenticated
@@ -23,7 +24,8 @@ export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) 
   const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
 
   if (!allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
+    // Force redirect to login so user re-auths with correct role rather than landing homepage with stale assumptions
+    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   }
 
   return <>{children}</>;

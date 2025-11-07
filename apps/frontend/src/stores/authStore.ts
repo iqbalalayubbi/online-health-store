@@ -14,6 +14,7 @@ interface AuthState {
   user: AuthUser | null;
   setAuth: (payload: { token: string; user: AuthUser }) => void;
   clearAuth: () => void;
+  logoutAndRedirect: (navigate: (to: string, options?: { replace?: boolean }) => void) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -23,10 +24,13 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       setAuth: ({ token, user }) => set({ token, user }),
       clearAuth: () => set({ token: null, user: null }),
+      logoutAndRedirect: (navigate) => {
+        set({ token: null, user: null });
+        navigate("/login", { replace: true });
+      },
     }),
     {
       name: "auth-store",
     },
   ),
 );
-
