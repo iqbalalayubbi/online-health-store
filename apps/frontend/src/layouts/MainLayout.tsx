@@ -47,10 +47,16 @@ export const MainLayout = () => {
                 </>
               ) : (
                 <>
-                  <Link className="transition-colors hover:text-blue-600" to="/login">
+                  <Link
+                    className="ml-3 border-l border-slate-200 pl-3 transition-colors hover:text-blue-600"
+                    to="/login"
+                  >
                     Login
                   </Link>
-                  <Link className="transition-colors hover:text-blue-600" to="/register">
+                  <Link
+                    className="rounded-md bg-blue-600 px-3 py-2 font-semibold text-white transition hover:bg-blue-700"
+                    to="/register"
+                  >
                     Register
                   </Link>
                 </>

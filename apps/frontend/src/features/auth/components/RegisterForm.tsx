@@ -42,7 +42,7 @@ export const RegisterForm = () => {
       className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
       onSubmit={handleSubmit}
     >
-      <h2 className="text-lg font-semibold text-slate-800">Daftar</h2>
+      <h2 className="text-lg font-semibold text-slate-800 text-center">Daftar</h2>
       <label className="grid gap-2 text-sm font-medium text-slate-700">
         Nama Lengkap
         <input
@@ -104,6 +104,18 @@ export const RegisterForm = () => {
           {getErrorMessage(mutation.error, "Registrasi gagal")}
         </p>
       )}
+
+      {/* add login link if user already have account */}
+      <p className="text-sm text-center text-slate-600">
+        Sudah punya akun?{" "}
+        <button
+          type="button"
+          className="font-medium text-blue-600 hover:underline"
+          onClick={() => navigate("/login")}
+        >
+          Masuk di sini
+        </button>
+      </p>
     </form>
   );
 };

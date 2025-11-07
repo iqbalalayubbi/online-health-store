@@ -31,7 +31,7 @@ export const LoginForm = () => {
       className="space-y-4 rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
       onSubmit={handleSubmit}
     >
-      <h2 className="text-lg font-semibold text-slate-800">Masuk</h2>
+      <h2 className="text-lg font-semibold text-slate-800 text-center">Masuk</h2>
       <label className="grid gap-2 text-sm font-medium text-slate-700">
         Email
         <input
@@ -64,6 +64,18 @@ export const LoginForm = () => {
           {getErrorMessage(mutation.error, "Login gagal")}
         </p>
       )}
+
+      {/* add register link if user doesn't have account */}
+      <p className="text-sm text-center text-slate-600">
+        Belum punya akun?{" "}
+        <button
+          type="button"
+          className="font-medium text-blue-600 hover:underline"
+          onClick={() => navigate("/register")}
+        >
+          Daftar di sini
+        </button>
+      </p>
     </form>
   );
 };
