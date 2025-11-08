@@ -7,6 +7,7 @@ import { env } from "./config/env";
 import { router } from "./routes";
 import { notFoundHandler } from "./middleware/not-found";
 import { errorHandler } from "./middleware/error-handler";
+import { setupSwagger } from "./config/swagger";
 
 const app = express();
 
@@ -26,10 +27,12 @@ app.get("/health", (_req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
+// API docs (Swagger UI) under /api/docs and spec at /api/openapi.json
+setupSwagger(app);
+
 app.use("/api", router);
 
 app.use(notFoundHandler);
 app.use(errorHandler);
 
 export { app };
-

@@ -10,6 +10,8 @@ import { toast } from "../components/Toast";
 import { downloadOrderPDF } from "../utils/pdf";
 import type { Order } from "../types/api";
 import { FeedbackModal } from "../features/customer/components/FeedbackModal";
+import { StatusBadge } from "../components/StatusBadge";
+import { Money } from "../components/Money";
 
 export const OrdersPage = () => {
   const queryClient = useQueryClient();
@@ -63,39 +65,7 @@ export const OrdersPage = () => {
     };
   }, [ordersQuery.isSuccess, orders, feedbackProductId, feedbackOrderId]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "DELIVERED":
-        return "bg-green-100 text-green-700";
-      case "SHIPPED":
-        return "bg-blue-100 text-blue-700";
-      case "APPROVED":
-        return "bg-cyan-100 text-cyan-700";
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-700";
-      case "CANCELLED":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-slate-100 text-slate-700";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "DELIVERED":
-        return "Terkirim";
-      case "SHIPPED":
-        return "Dikirim";
-      case "APPROVED":
-        return "Disetujui";
-      case "PENDING":
-        return "Menunggu";
-      case "CANCELLED":
-        return "Dibatalkan";
-      default:
-        return status;
-    }
-  };
+  // Status mapping now handled by reusable StatusBadge component
 
   return (
     <div className="space-y-6">
@@ -153,11 +123,7 @@ export const OrdersPage = () => {
                   </div>
                   <div className="text-right">
                     <p className="text-xs font-semibold text-slate-500 uppercase">Status</p>
-                    <p
-                      className={`mt-1 inline-block rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(order.status)}`}
-                    >
-                      {getStatusLabel(order.status)}
-                    </p>
+                    <StatusBadge status={order.status} className="mt-1" />
                   </div>
                 </div>
               </div>
@@ -182,10 +148,7 @@ export const OrdersPage = () => {
                       </div>
                       <div className="flex items-center gap-3 sm:justify-end">
                         <p className="text-sm font-semibold text-blue-600">
-                          Rp
-                          {(Number(item.price) * item.quantity).toLocaleString("id-ID", {
-                            minimumFractionDigits: 0,
-                          })}
+                          <Money value={Number(item.price) * item.quantity} />
                         </p>
                         {order.status === "DELIVERED" &&
                           !(reviewedByOrder[order.id] || []).includes(item.product.id) && (
@@ -285,12 +248,12 @@ export const OrdersPage = () => {
                   <div className="flex justify-between text-sm">
                     <span className="text-slate-600">Subtotal</span>
                     <span className="font-medium text-slate-800">
-                      Rp
-                      {order.items
-                        .reduce((sum, item) => sum + Number(item.price) * item.quantity, 0)
-                        .toLocaleString("id-ID", {
-                          minimumFractionDigits: 0,
-                        })}
+                      <Money
+                        value={order.items.reduce(
+                          (sum, item) => sum + Number(item.price) * item.quantity,
+                          0,
+                        )}
+                      />
                     </span>
                   </div>
                 </div>
@@ -298,15 +261,12 @@ export const OrdersPage = () => {
                 <div className="flex justify-between">
                   <span className="text-base font-semibold text-slate-800">Total Pembayaran</span>
                   <span className="text-2xl font-bold text-blue-600">
-                    Rp
-                    {Number(order.totalAmount).toLocaleString("id-ID", {
-                      minimumFractionDigits: 0,
-                    })}
+                    <Money value={Number(order.totalAmount)} />
                   </span>
                 </div>
 
                 {/* Action Buttons */}
-                <div className="mt-4 flex gap-3 flex-wrap">
+                <div className="mt-4 flex gap-3 flex-wrap justify-between">
                   {order.status === "PENDING" && (
                     <button
                       onClick={() => cancelMutation.mutate(order.id)}
@@ -328,7 +288,7 @@ export const OrdersPage = () => {
                         setDownloadingPDFId(null);
                       }
                     }}
-                    disabled={downloadingPDFId === order.id}
+                    disabled={downloadingPDFId === order.id || order.status === "PENDING"}
                     className="rounded-md border border-blue-300 px-4 py-2 text-sm font-semibold text-blue-600 transition hover:bg-blue-50 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {downloadingPDFId === order.id ? (
@@ -354,12 +314,12 @@ export const OrdersPage = () => {
                       "📄 Download PDF"
                     )}
                   </button>
-                  <Link
+                  {/* <Link
                     to={`/orders/${order.id}`}
                     className="ml-auto rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-700"
                   >
                     Detail Pesanan
-                  </Link>
+                  </Link> */}
                 </div>
               </div>
             </div>

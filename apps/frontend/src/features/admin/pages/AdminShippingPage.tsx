@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { fetchOrdersForShipping, markOrderAsShipped, markOrderAsDelivered } from "../api";
+import { StatusBadge } from "../../../components/StatusBadge";
+import { Money } from "../../../components/Money";
 import { toast } from "../../../components/Toast";
 
 interface ShippingOrder {
@@ -49,20 +51,7 @@ export const AdminShippingPage = () => {
     return order.status === filter;
   });
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "PENDING":
-        return "bg-yellow-100 text-yellow-700";
-      case "SHIPPED":
-        return "bg-blue-100 text-blue-700";
-      case "DELIVERED":
-        return "bg-green-100 text-green-700";
-      case "CANCELLED":
-        return "bg-red-100 text-red-700";
-      default:
-        return "bg-slate-100 text-slate-700";
-    }
-  };
+  // Status colors handled by StatusBadge
 
   return (
     <div className="space-y-6">
@@ -128,16 +117,10 @@ export const AdminShippingPage = () => {
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-700">{order.customerEmail}</td>
                   <td className="px-6 py-4 text-sm font-semibold text-slate-900">
-                    Rp{order.totalPrice.toLocaleString("id-ID")}
+                    <Money value={order.totalPrice} />
                   </td>
                   <td className="px-6 py-4">
-                    <span
-                      className={`inline-block rounded-full px-3 py-1 text-xs font-semibold ${getStatusColor(
-                        order.status,
-                      )}`}
-                    >
-                      {order.status}
-                    </span>
+                    <StatusBadge status={order.status} />
                   </td>
                   <td className="px-6 py-4 text-sm text-slate-700">
                     {order.trackingNumber ? (
