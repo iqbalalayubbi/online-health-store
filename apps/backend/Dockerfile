@@ -28,8 +28,8 @@ FROM base AS runtime
 ENV NODE_ENV=production
 WORKDIR /app
 
-# Copy node_modules, built artifacts, and prisma files
-COPY --from=deps /app/node_modules ./node_modules
+# Copy node_modules from build stage (contains generated Prisma Client)
+COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/prisma.config.ts ./prisma.config.ts

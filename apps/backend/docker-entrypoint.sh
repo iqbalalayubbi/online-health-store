@@ -3,6 +3,8 @@ set -e
 
 # Expect DATABASE_URL, JWT_SECRET, HASH_SALT_ROUNDS already set via environment.
 
+echo "[backend] Ensuring Prisma Client is generated..."
+npx prisma generate 1>/dev/null || echo "[backend] prisma generate warning"
 echo "[backend] Running database migrations..."
 npx prisma migrate deploy
 
