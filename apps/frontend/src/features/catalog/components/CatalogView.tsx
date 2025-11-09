@@ -49,8 +49,10 @@ export const CatalogView = () => {
     addToCartMutation.mutate(productId);
   };
 
-  const categories = categoriesQuery.data ?? [];
-  const products = productsQuery.data ?? [];
+  // Be defensive: in production a misconfigured API base URL can return HTML/error objects.
+  // Ensure we always handle arrays to avoid runtime "A.find is not a function" crashes.
+  const categories = Array.isArray(categoriesQuery.data) ? categoriesQuery.data : [];
+  const products = Array.isArray(productsQuery.data) ? productsQuery.data : [];
   const activeCategoryName =
     categories.find((category) => category.id === selectedCategory)?.name ?? "Semua Produk";
 
