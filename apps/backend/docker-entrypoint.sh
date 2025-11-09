@@ -9,8 +9,8 @@ echo "[backend] Running database migrations..."
 npx prisma migrate deploy
 
 if [ "$RUN_SEED" = "true" ]; then
-  echo "[backend] Seeding database..."
-  npm run db:seed || echo "[backend] Seed failed or skipped"
+  echo "[backend] Seeding database (destructive reset)..."
+  npm run db:seed && echo "[backend] Seed completed" || echo "[backend] Seed failed or skipped"
 fi
 
 echo "[backend] Starting server..."
