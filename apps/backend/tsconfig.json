@@ -4,11 +4,11 @@
     "rootDir": "src",
     "outDir": "dist",
 
-    // Align with Node's ESM resolver to ensure proper path/extension handling in emitted JS
-    "module": "NodeNext",
+    // Compile to CommonJS to avoid ESM extension headaches in Node runtime
+    "module": "CommonJS",
     "target": "ES2022",
-    // Use NodeNext so TypeScript resolves like Node and emits compatible imports
-    "moduleResolution": "NodeNext",
+    // Use classic Node resolution for CommonJS
+    "moduleResolution": "Node",
     "types": ["node"],
 
     // Other Outputs
