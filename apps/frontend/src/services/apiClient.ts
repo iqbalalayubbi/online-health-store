@@ -1,8 +1,22 @@
 import axios from "axios";
 import { useAuthStore } from "../stores/authStore";
 
+// Normalize VITE_API_URL so production mistakes like missing protocol
+// (e.g. "backend.up.railway.app/api") won't produce path like
+// https://frontend.up.railway.app/backend.up.railway.app/api/... which leads to 404/405.
+const rawBase = (import.meta.env.VITE_API_URL as string | undefined) ?? "http://localhost:4000/api";
+const baseURL = (() => {
+  const v = (rawBase || "").trim();
+  if (!v) return "http://localhost:4000/api";
+  // If protocol is missing, assume https in production
+  if (!/^https?:\/\//i.test(v)) {
+    return `https://${v}`;
+  }
+  return v;
+})();
+
 const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ?? "http://localhost:4000/api",
+  baseURL,
   withCredentials: true,
 });
 
