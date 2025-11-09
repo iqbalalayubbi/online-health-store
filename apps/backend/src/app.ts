@@ -26,7 +26,10 @@ app.use(
   }),
 );
 // Handle preflight
-app.options("*", cors());
+// Express 5 + path-to-regexp throws on literal "*" pattern; CORS middleware already
+// handles preflight (OPTIONS) when mounted globally, so explicit app.options is unnecessary.
+// If needed for very custom handling, use a regex like /.*/ instead of "*".
+// Removed to prevent PathError: Missing parameter name at index 1: *.
 app.use(helmet());
 app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
 app.use(express.json());
