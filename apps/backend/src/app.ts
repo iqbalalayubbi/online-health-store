@@ -11,12 +11,22 @@ import { setupSwagger } from "./config/swagger";
 
 const app = express();
 
+// CORS
+// - In development, allow Vite on localhost:5173
+// - In production, allow a specific frontend origin if provided, else reflect requester origin
 app.use(
   cors({
-    origin: env.NODE_ENV === "development" ? ["http://localhost:5173"] : undefined,
+    origin:
+      env.NODE_ENV === "development"
+        ? ["http://localhost:5173"]
+        : env.FRONTEND_ORIGIN
+          ? [env.FRONTEND_ORIGIN]
+          : true,
     credentials: true,
   }),
 );
+// Handle preflight
+app.options("*", cors());
 app.use(helmet());
 app.use(morgan(env.NODE_ENV === "development" ? "dev" : "combined"));
 app.use(express.json());

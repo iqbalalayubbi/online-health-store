@@ -11,6 +11,8 @@ const envSchema = z.object({
   }),
   JWT_SECRET: z.string().min(8, "JWT_SECRET must be at least 8 characters"),
   HASH_SALT_ROUNDS: z.string().default("10"),
+  // Optional: set your deployed frontend origin (e.g., https://your-frontend.up.railway.app)
+  FRONTEND_ORIGIN: z.string().url().optional(),
 });
 
 const parsedEnv = envSchema.safeParse(process.env);
