@@ -78,6 +78,7 @@ export const OrdersList = () => {
       </ul>
       {orders.length === 0 && <p className="text-sm text-slate-500">Belum ada pesanan.</p>}
       <FeedbackModal
+        orderId={feedbackProductId}
         isOpen={Boolean(feedbackProductId)}
         productId={feedbackProductId}
         productName={feedbackProductName}

@@ -46,6 +46,9 @@ export const exportOrderPDF = async (
 ) => {
   try {
     const { orderId } = req.params;
+    if (!orderId) {
+      return res.status(400).json({ error: "Bad Request", message: "Order ID is required" });
+    }
 
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized" });

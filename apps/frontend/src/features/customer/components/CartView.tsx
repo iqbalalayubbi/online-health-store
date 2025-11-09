@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { addToCart, fetchCart, removeFromCart } from "../api";
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 
 interface AddToCartFormProps {
   onSubmit: (payload: { productId: string; quantity: number }) => void;

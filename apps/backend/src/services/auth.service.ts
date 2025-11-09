@@ -7,6 +7,7 @@ import { createHttpError } from "../utils/http-error";
 
 export const registerUser = async (payload: unknown) => {
   const data = registerSchema.parse(payload);
+  const phoneNumber = data.phoneNumber ?? null;
 
   const existing = await prisma.user.findUnique({ where: { email: data.email } });
   if (existing) {
@@ -29,7 +30,7 @@ export const registerUser = async (payload: unknown) => {
         data: {
           userId: user.id,
           fullName: data.fullName,
-          phoneNumber: data.phoneNumber,
+          phoneNumber,
         },
       });
     } else {
@@ -37,7 +38,7 @@ export const registerUser = async (payload: unknown) => {
         data: {
           userId: user.id,
           fullName: data.fullName,
-          phoneNumber: data.phoneNumber,
+          phoneNumber,
         },
       });
     }

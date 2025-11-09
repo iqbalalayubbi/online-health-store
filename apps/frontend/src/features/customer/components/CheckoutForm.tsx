@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { checkout } from "../api";
 
@@ -131,4 +131,3 @@ export const CheckoutForm = () => {
     </section>
   );
 };
-

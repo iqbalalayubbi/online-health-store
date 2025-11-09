@@ -1,5 +1,6 @@
 import { prisma } from "../lib/prisma";
 import { z } from "zod";
+import type { Prisma } from "@prisma/client";
 import { createHttpError } from "../utils/http-error";
 
 const shopRequestSchema = z.object({
@@ -23,8 +24,8 @@ export const submitShopRequest = async (sellerProfileId: string, payload: unknow
     data: {
       sellerId: sellerProfileId,
       proposedName: data.proposedName,
-      proposedDescription: data.proposedDescription,
-      details: data.details,
+      proposedDescription: data.proposedDescription ?? null,
+      details: data.details ?? null,
     },
   });
 };
@@ -56,10 +57,13 @@ export const createProduct = async (sellerProfileId: string, payload: unknown) =
     throw createHttpError(404, "Shop not found or you do not have access");
   }
 
+  const { description, isActive, ...rest } = data;
   return prisma.product.create({
     data: {
-      ...data,
+      ...rest,
       sellerId: sellerProfileId,
+      ...(description !== undefined ? { description } : {}),
+      ...(isActive !== undefined ? { isActive } : {}),
     },
   });
 };
@@ -79,9 +83,18 @@ export const updateProduct = async (
     throw createHttpError(404, "Product not found");
   }
 
+  const updateData: Prisma.ProductUncheckedUpdateInput = {};
+  if (data.name !== undefined) updateData.name = data.name;
+  if (data.description !== undefined) updateData.description = data.description;
+  if (data.price !== undefined) updateData.price = data.price;
+  if (data.stock !== undefined) updateData.stock = data.stock;
+  if (data.categoryId !== undefined) updateData.categoryId = data.categoryId;
+  if (data.shopId !== undefined) updateData.shopId = data.shopId;
+  if (data.isActive !== undefined) updateData.isActive = data.isActive;
+
   return prisma.product.update({
     where: { id: productId },
-    data,
+    data: updateData,
   });
 };
 

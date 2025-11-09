@@ -11,13 +11,16 @@ export interface AuthenticatedRequest extends Request {
 export const authenticate =
   (roles: string[] = []) =>
   (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-    const header = req.headers.authorization;
-    if (!header?.startsWith("Bearer ")) {
+    const header = req.headers.authorization ?? "";
+    if (!header.startsWith("Bearer ")) {
       return res.status(401).json({ error: "Unauthorized", message: "Missing token" });
     }
 
     try {
-      const token = header.split(" ")[1];
+      const [, token] = header.split(" ");
+      if (!token) {
+        return res.status(401).json({ error: "Unauthorized", message: "Missing token" });
+      }
       const payload = verifyToken(token);
       if (roles.length > 0 && !roles.includes(payload.role)) {
         return res.status(403).json({ error: "Forbidden", message: "Insufficient permissions" });

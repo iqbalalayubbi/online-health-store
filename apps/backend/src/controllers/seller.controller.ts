@@ -71,8 +71,12 @@ export const updateProduct = async (
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
+    const { productId } = req.params;
+    if (!productId) {
+      return res.status(400).json({ error: "Bad Request", message: "Product ID is required" });
+    }
     const profile = await getSellerProfile(req.user.id);
-    const product = await sellerService.updateProduct(profile.id, req.params.productId, req.body);
+    const product = await sellerService.updateProduct(profile.id, productId, req.body);
     res.json(product);
   } catch (error) {
     next(error);
@@ -88,8 +92,12 @@ export const deleteProduct = async (
     if (!req.user) {
       return res.status(401).json({ error: "Unauthorized" });
     }
+    const { productId } = req.params;
+    if (!productId) {
+      return res.status(400).json({ error: "Bad Request", message: "Product ID is required" });
+    }
     const profile = await getSellerProfile(req.user.id);
-    await sellerService.deleteProduct(profile.id, req.params.productId);
+    await sellerService.deleteProduct(profile.id, productId);
     res.status(204).send();
   } catch (error) {
     next(error);

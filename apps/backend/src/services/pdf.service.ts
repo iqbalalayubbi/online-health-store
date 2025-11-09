@@ -1,14 +1,18 @@
 import PDFDocument from "pdfkit";
 import { Readable } from "stream";
-import type { Order, OrderItem, Payment, Shipment, Product } from "@prisma/client";
+import type { Prisma } from "@prisma/client";
 
-interface OrderWithRelations extends Order {
-  items: (OrderItem & {
-    product: Product;
-  })[];
-  payment?: Payment | null;
-  shipment?: Shipment | null;
-}
+export type OrderWithRelations = Prisma.OrderGetPayload<{
+  include: {
+    items: {
+      include: {
+        product: true;
+      };
+    };
+    payment: true;
+    shipment: true;
+  };
+}>;
 
 /**
  * Generate PDF stream for order invoice with proper table formatting

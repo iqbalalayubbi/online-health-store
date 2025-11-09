@@ -11,9 +11,10 @@ export const createEntry = (userId: string | undefined, payload: unknown) => {
   const data = guestBookSchema.parse(payload);
   return prisma.guestBookEntry.create({
     data: {
-      ...data,
-      userId,
+      name: data.name,
+      message: data.message,
+      email: data.email ?? null,
+      userId: userId ?? null,
     },
   });
 };
-
