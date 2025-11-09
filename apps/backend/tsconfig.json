@@ -4,9 +4,11 @@
     "rootDir": "src",
     "outDir": "dist",
 
-    "module": "ESNext",
+    // Align with Node's ESM resolver to ensure proper path/extension handling in emitted JS
+    "module": "NodeNext",
     "target": "ES2022",
-    "moduleResolution": "bundler",
+    // Use NodeNext so TypeScript resolves like Node and emits compatible imports
+    "moduleResolution": "NodeNext",
     "types": ["node"],
 
     // Other Outputs
