@@ -11,6 +11,7 @@ import type { Product } from "../../../types/api";
 
 export const CatalogView = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | undefined>(undefined);
+  const [search, setSearch] = useState<string>("");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const { user } = useAuthStore();
@@ -53,6 +54,22 @@ export const CatalogView = () => {
   // Ensure we always handle arrays to avoid runtime "A.find is not a function" crashes.
   const categories = Array.isArray(categoriesQuery.data) ? categoriesQuery.data : [];
   const products = Array.isArray(productsQuery.data) ? productsQuery.data : [];
+
+  // Word-prefix matching per token: every token in the query must match the start of
+  // at least one word in the product name (case-insensitive, accent-insensitive).
+  const normalize = (s: string) =>
+    s
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+  const matchesQuery = (name: string, q: string) => {
+    const qTokens = normalize(q).trim().split(/\s+/).filter(Boolean);
+    if (qTokens.length === 0) return true;
+    const words = normalize(name).split(/\s+/).filter(Boolean);
+    return qTokens.every((qt) => words.some((w) => w.startsWith(qt)));
+  };
+
+  const filteredProducts = products.filter((p) => matchesQuery(p.name, search));
   const activeCategoryName =
     categories.find((category) => category.id === selectedCategory)?.name ?? "Semua Produk";
 
@@ -94,13 +111,22 @@ export const CatalogView = () => {
           })}
         </aside>
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-slate-800">{activeCategoryName}</h3>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 className="text-lg font-semibold text-slate-800">{activeCategoryName}</h3>
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Cari Produk"
+              className="w-full sm:max-w-xs rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 placeholder-slate-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
           {productsQuery.isLoading && <p className="text-sm text-slate-500">Memuat produk...</p>}
-          {!productsQuery.isLoading && products.length === 0 && (
-            <p className="text-sm text-slate-500">Tidak ada produk yang tersedia.</p>
+          {!productsQuery.isLoading && filteredProducts.length === 0 && (
+            <p className="text-sm text-slate-500">Tidak ada produk yang sesuai.</p>
           )}
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-            {products.map((product) => (
+            {filteredProducts.map((product) => (
               <ProductCard
                 key={product.id}
                 product={product}
