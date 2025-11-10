@@ -1,3 +1,11 @@
+/**
+ * Axios instance untuk memanggil API backend.
+ *
+ * Catatan penting:
+ * - Meng-normalisasi VITE_API_URL agar selalu punya protokol (http/https) dan tidak menghasilkan baseURL yang salah.
+ * - Menyisipkan Authorization: Bearer <token> secara otomatis jika token ada di auth store.
+ * - Global 401 handler: bila backend mengembalikan 401, state auth dibersihkan lalu redirect ke /login.
+ */
 import axios from "axios";
 import { useAuthStore } from "../stores/authStore";
 
@@ -15,6 +23,10 @@ const baseURL = (() => {
   return v;
 })();
 
+/**
+ * Objek axios siap pakai untuk seluruh pemanggilan API.
+ * Selalu sertakan credentials (cookie) dan gunakan baseURL yang telah dinormalisasi.
+ */
 const apiClient = axios.create({
   baseURL,
   withCredentials: true,

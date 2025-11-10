@@ -1,5 +1,11 @@
-import { AxiosError } from 'axios';
+import { AxiosError } from "axios";
 
+/**
+ * Mengambil pesan error yang ramah pengguna dari berbagai bentuk error:
+ * - AxiosError dengan response.data.message
+ * - Instance Error biasa
+ * - Nilai unknown lain -> fallback
+ */
 export const getErrorMessage = (error: unknown, fallback: string) => {
   if (!error) return fallback;
 
@@ -14,4 +20,3 @@ export const getErrorMessage = (error: unknown, fallback: string) => {
 
   return fallback;
 };
-

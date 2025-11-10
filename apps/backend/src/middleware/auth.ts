@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from "express";
 import { verifyToken } from "../utils/jwt";
 
+/**
+ * Request yang sudah dibubuhi info user hasil verifikasi JWT.
+ */
 export interface AuthenticatedRequest extends Request {
   user?: {
     id: string;
@@ -8,6 +11,11 @@ export interface AuthenticatedRequest extends Request {
   };
 }
 
+/**
+ * Middleware auth berbasis Bearer JWT.
+ * - Kalau `roles` diisi, hanya izinkan peran tertentu.
+ * - Taruh di route yang butuh proteksi.
+ */
 export const authenticate =
   (roles: string[] = []) =>
   (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
@@ -36,4 +44,3 @@ export const authenticate =
       return res.status(401).json({ error: "Unauthorized", message: "Invalid token" });
     }
   };
-

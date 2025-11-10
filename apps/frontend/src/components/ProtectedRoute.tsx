@@ -1,6 +1,15 @@
 import { Navigate, useLocation } from "react-router";
 import { useAuthStore } from "../stores/authStore";
 
+/**
+ * Komponen guard untuk route yang memerlukan autentikasi / peran tertentu.
+ *
+ * Behavior:
+ * - Jika belum login: redirect ke /login dengan state.from untuk kembali setelah login.
+ * - Jika `requiredRole` diberikan: hanya izinkan user dengan peran tersebut (bisa array).
+ * - Jika peran tidak cocok: redirect ke /login (memaksa re-autentikasi agar session lama tidak dipakai).
+ */
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
   requiredRole?: "CUSTOMER" | "SELLER" | "ADMIN" | ("CUSTOMER" | "SELLER" | "ADMIN")[];
