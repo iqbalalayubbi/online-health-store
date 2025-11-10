@@ -135,7 +135,51 @@ Endpoint penting (cuplikan):
 - Feedback: `POST /api/feedback`
 - Catalog: `GET /api/catalog/categories`, `GET /api/catalog/products`
 
-## 🐳 Docker (Backend)
+## �️ Database ERD
+
+Berikut relasi antar tabel berdasarkan `apps/backend/prisma/schema.prisma`.
+
+```mermaid
+erDiagram
+  User ||--o| AdminProfile : has
+  User ||--o| SellerProfile : has
+  User ||--o| CustomerProfile : has
+  User ||--o{ Shop : manages
+  User ||--o{ Feedback : writes
+  User ||--o{ GuestBookEntry : writes
+  User ||--o{ AuthToken : has
+
+  AdminProfile ||--o{ ShopCreationRequest : reviews
+  SellerProfile ||--o{ ShopCreationRequest : submits
+
+  SellerProfile ||--o{ Shop : owns
+  Shop ||--o{ Category : has
+  Category ||--o{ Product : has
+  SellerProfile ||--o{ Product : sells
+  Shop ||--o{ Product : lists
+
+  CustomerProfile ||--o{ Cart : has
+  Cart ||--o{ CartItem : contains
+  Product ||--o{ CartItem : in
+
+  CustomerProfile ||--o{ Order : places
+  Order ||--o{ OrderItem : has
+  Product ||--o{ OrderItem : ordered
+
+  Order ||--o| Payment : has
+  Order ||--o| Shipment : has
+
+  Product ||--o{ Feedback : receives
+  Order ||--o{ Feedback : receives
+```
+
+Catatan:
+
+- Satu `User` dapat memiliki salah satu profil peran (`AdminProfile`/`SellerProfile`/`CustomerProfile`) secara opsional (0..1).
+- `Shop.manager` mereferensikan `User`, sehingga satu user dapat mengelola banyak `Shop`.
+- `Feedback` memiliki unik gabungan `@@unique([userId, productId, orderId])` untuk membatasi satu feedback per produk per order per user.
+
+## �🐳 Docker (Backend)
 
 Dockerfile multi-stage: `apps/backend/Dockerfile`
 
